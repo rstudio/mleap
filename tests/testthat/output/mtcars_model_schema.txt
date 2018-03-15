@@ -1,0 +1,9 @@
+# A tibble: 6 x 4
+  name       type   nullable dimension
+  <chr>      <chr>  <lgl>    <chr>    
+1 qsec       double TRUE     <NA>     
+2 hp         double FALSE    <NA>     
+3 wt         double TRUE     <NA>     
+4 big_hp     double FALSE    <NA>     
+5 features   double TRUE     (3)      
+6 prediction double FALSE    <NA>     

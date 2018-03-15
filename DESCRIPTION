@@ -1,0 +1,25 @@
+Package: mleap
+Type: Package
+Title: R Interface to MLeap
+Version: 0.1.0
+Authors@R: c(
+  person("Kevin", "Kuo", role = c("aut", "cre"), email = "kevin.kuo@rstudio.com")
+  )
+Description: A sparklyr <http://http://spark.rstudio.com/> extension that provides
+  an interface to MLeap <https://github.com/combust/mleap>, an open source library
+  that enables exporting and serving of Spark pipelines.
+License: Apache License (>= 2.0)
+Encoding: UTF-8
+LazyData: true
+Depends:
+  R (>= 3.1.2)
+Imports:
+  sparklyr,
+  jsonlite,
+  purrr,
+  fs,
+  tibble,
+  rJava,
+  rstudioapi (>= 0.7)
+RoxygenNote: 6.0.1
+Suggests: testthat

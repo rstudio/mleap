@@ -1,0 +1,9 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^internal/
+^logs/
+^README\.Rmd$
+^README\.md$
+^LICENSE\.md$
+^configure\.R$
+^derby\.log$
