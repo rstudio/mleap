@@ -1,4 +1,4 @@
-package sparklydeploy
+package mleap
 
 import org.apache.spark.ml.mleap.SparkUtil
 import ml.combust.mleap.spark.SparkSupport._

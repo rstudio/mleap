@@ -114,7 +114,7 @@ ml_save_bundle <- function(x, dataset, path, overwrite = FALSE) {
       fs::file_delete(path)
   }
   
-  sparklyr::invoke_static(sc, "sparklydeploy.Main", "exportArrayToBundle",
+  sparklyr::invoke_static(sc, "mleap.Main", "exportArrayToBundle",
                           sdf, path, stages)
   message("Model successfully exported.")
   invisible(NULL)
