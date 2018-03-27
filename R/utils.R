@@ -4,7 +4,7 @@ resolve_path <- function(path) {
   }
   else {
     dir_path <- path %>%
-      normalizePath(mustWork = FALSE) %>%
+      normalizePath(mustWork = FALSE, winslash = "/") %>%
       dirname() %>%
       tools::file_path_as_absolute()
     prefix <- if (.Platform$OS.type == "windows") "file:///" else "file:"
