@@ -56,7 +56,7 @@ install_maven <- function(dir = NULL) {
 }
 
 resolve_mleap_path <- function() {
-  mleap_dir <- getOption("mleap.home", install_dir("mleap"))
+  mleap_dir <- getOption("mleap.home", install_dir("mleap/mleap-0.9.4"))
   mleap_dir
 }
 
@@ -66,14 +66,14 @@ resolve_mleap_path <- function() {
 #' @param restart_session Whether to restart R session after installation
 #' @export
 install_mleap <- function(dir = NULL, restart_session = TRUE) {
-  mleap_dir <- dir %||% install_dir("mleap")
+  mleap_dir <- dir %||% install_dir("mleap/mleap-0.9.4")
   if (!dir.exists(mleap_dir))
     dir.create(mleap_dir)
   
   mvn <- resolve_maven_path()
   
-  download_jars(mvn, "ml.combust.mleap:mleap-runtime_2.11:0.9.0", mleap_dir)
-  download_jars(mvn, "ml.combust.mleap:mleap-spark_2.10:0.9.0", mleap_dir)
+  download_jars(mvn, "ml.combust.mleap:mleap-runtime_2.11:0.9.4", mleap_dir)
+  download_jars(mvn, "ml.combust.mleap:mleap-spark_2.10:0.9.4", mleap_dir)
   
   if (restart_session && rstudioapi::hasFun("restartSession"))
     rstudioapi::restartSession()
