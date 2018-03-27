@@ -1,6 +1,8 @@
 R interface for MLeap
 ================
 
+[![Travis build status](https://travis-ci.org/rstudio/mleap.svg?branch=master)](https://travis-ci.org/rstudio/mleap) [![Coverage status](https://codecov.io/gh/rstudio/mleap/branch/master/graph/badge.svg)](https://codecov.io/github/rstudio/mleap?branch=master)
+
 **mleap** is a [sparklyr](http://spark.rstudio.com/) extension that provides an interface to [MLeap](https://github.com/combust/mleap), which allows us to take Spark pipelines to production.
 
 Getting started
@@ -58,10 +60,10 @@ model
 ```
 
     ## MLeap Transformer
-    ## <9d11fa38-af2f-48af-95b1-2c6e6feaec8f> 
-    ##   Name: pipeline_d5f4583b6792 
+    ## <9fcd7576-c32d-4d1d-a92e-04b2382a4ca1> 
+    ##   Name: pipeline_2d1c4a0665c3 
     ##   Format: json 
-    ##   MLeap Version: 0.10.0-SNAPSHOT
+    ##   MLeap Version: 0.9.0-SNAPSHOT
 
 We can retrieve the schema associated with the model:
 

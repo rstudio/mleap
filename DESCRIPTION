@@ -22,4 +22,6 @@ Imports:
   rJava,
   rstudioapi (>= 0.7)
 RoxygenNote: 6.0.1
-Suggests: testthat
+Suggests: 
+    testthat,
+    covr
