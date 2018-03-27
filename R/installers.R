@@ -49,9 +49,11 @@ install_maven <- function(dir = NULL) {
 
   utils::download.file("http://apache.mirrors.lucidnetworks.net/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz", maven_path)
 
-  utils::untar(maven_path, compressed = "gzip",
+  status <- utils::untar(maven_path, compressed = "gzip",
         exdir = maven_dir)
+  if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
   file.remove(maven_path)
+  message("Maven installation succeeded.")
   invisible(NULL)
 }
 
@@ -67,8 +69,8 @@ resolve_mleap_path <- function() {
 #' @export
 install_mleap <- function(dir = NULL, restart_session = TRUE) {
   mleap_dir <- dir %||% install_dir("mleap/mleap-0.9.4")
-  if (!dir.exists(mleap_dir))
-    dir.create(mleap_dir)
+  if (!fs::dir_exists(mleap_dir))
+    fs::dir_create(mleap_dir, recursive = TRUE)
   
   mvn <- resolve_maven_path()
   
@@ -78,6 +80,7 @@ install_mleap <- function(dir = NULL, restart_session = TRUE) {
   if (restart_session && rstudioapi::hasFun("restartSession"))
     rstudioapi::restartSession()
   
+  message("MLeap installation succeeded.")
   invisible(NULL)
 }
 
@@ -93,17 +96,34 @@ download_jars <- function(mvn, dependency, install_dir) {
     mvn, " dependency:get -Dartifact=", dependency, ":pom -Ddest=", temp_dir)
   )
   
+  if (!identical(run_get_pom, 0L))
+    stop(paste0("Installation failed. Can't download pom for ", dependency),
+         call. = FALSE
+    )
+  
   pom_path <- file.path(
     temp_dir, paste0(artifact_version[[1]], "-", artifact_version[[2]], ".pom")
   )
   # package_java_dir <-  file.path(package_path, "java/")
   run_get_artifact <- system(paste0(mvn, 
-                                    " dependency:get -Dartifact=ml.combust.mleap:mleap-runtime_2.11:0.9.0 -Ddest=",
+                                    " dependency:get -Dartifact=",
+                                    dependency,
+                                    " -Ddest=",
                                     install_dir)
   )
+  
+  if (!identical(run_get_artifact, 0L))
+    stop(paste0("Installation failed. Can't download dependencies for ", dependency),
+         call. = FALSE
+    )
   
   run_get_deps <- system(paste0(mvn,
                                 " dependency:copy-dependencies -f ", pom_path,
                                 " -DoutputDirectory=",
                                 install_dir))
+  
+  if (!identical(run_get_deps, 0L))
+    stop(paste0("Installation failed. Can't copy dependencies for ", dependency),
+         call. = FALSE
+    )
 }
