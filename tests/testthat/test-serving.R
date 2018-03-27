@@ -58,7 +58,7 @@ test_that("We can export a list of transformers", {
     ml_stages(c("vector_assembler", "logistic", "index_to_string"))
   transformed_tbl <- stages %>%
     purrr::reduce(sdf_transform, .init = iris_tbl)
-  model_path <- file.path(tempdir(), "mtcars_model.zip")
+  model_path <- file.path(tempdir(), "iris_model.zip")
   
   expect_message(
     ml_save_bundle(stages, transformed_tbl, model_path, overwrite = TRUE),
