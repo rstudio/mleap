@@ -44,13 +44,13 @@ install_maven <- function(dir = NULL) {
   maven_dir <- dir %||% install_dir("maven")
   if (!dir.exists(maven_dir))
     dir.create(maven_dir)
-
+  
   maven_path <- file.path(maven_dir, "apache-maven-3.5.2-bin.tar.gz")
-
+  
   utils::download.file("http://apache.mirrors.lucidnetworks.net/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz", maven_path)
-
+  
   status <- utils::untar(maven_path, compressed = "gzip",
-        exdir = maven_dir)
+                         exdir = maven_dir)
   if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
   file.remove(maven_path)
   message("Maven installation succeeded.")
@@ -92,8 +92,9 @@ download_jars <- function(mvn, dependency, install_dir) {
     unlist() %>%
     `[`(2:3)
   
-  run_get_pom <- system(paste0(
-    mvn, " dependency:get -Dartifact=", dependency, ":pom -Ddest=", temp_dir)
+  run_get_pom <- system(
+    paste0(mvn, " dependency:get -Dartifact=", dependency, ":pom -Ddest=", temp_dir),
+    ignore.stdout = TRUE
   )
   
   if (!identical(run_get_pom, 0L))
@@ -105,11 +106,13 @@ download_jars <- function(mvn, dependency, install_dir) {
     temp_dir, paste0(artifact_version[[1]], "-", artifact_version[[2]], ".pom")
   )
   # package_java_dir <-  file.path(package_path, "java/")
-  run_get_artifact <- system(paste0(mvn, 
-                                    " dependency:get -Dartifact=",
-                                    dependency,
-                                    " -Ddest=",
-                                    install_dir)
+  run_get_artifact <- system(
+    paste0(mvn, 
+           " dependency:get -Dartifact=",
+           dependency,
+           " -Ddest=",
+           install_dir),
+    ignore.stdout = TRUE
   )
   
   if (!identical(run_get_artifact, 0L))
@@ -117,10 +120,13 @@ download_jars <- function(mvn, dependency, install_dir) {
          call. = FALSE
     )
   
-  run_get_deps <- system(paste0(mvn,
-                                " dependency:copy-dependencies -f ", pom_path,
-                                " -DoutputDirectory=",
-                                install_dir))
+  run_get_deps <- system(
+    paste0(mvn,
+           " dependency:copy-dependencies -f ", pom_path,
+           " -DoutputDirectory=",
+           install_dir),
+    ignore.stdout = TRUE
+  )
   
   if (!identical(run_get_deps, 0L))
     stop(paste0("Installation failed. Can't copy dependencies for ", dependency),
