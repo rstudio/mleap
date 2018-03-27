@@ -15,7 +15,7 @@ object Main {
   def exportArrayToBundle(dataset: DataFrame, path: String, transformers: Transformer*) : Unit = {
     val pipeline = SparkUtil.createPipelineModel(transformers.toArray)
     implicit val sbc = SparkBundleContext().withDataset(dataset)
-    for(bf <- managed(BundleFile("jar:file:" + path))) {
+    for(bf <- managed(BundleFile("jar:" + path))) {
         pipeline.writeBundle.save(bf)get
       }
   }

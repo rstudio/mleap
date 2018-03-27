@@ -7,6 +7,7 @@ resolve_path <- function(path) {
       normalizePath(mustWork = FALSE) %>%
       dirname() %>%
       tools::file_path_as_absolute()
-    file.path(dir_path, basename(path))
+    prefix <- if (.Platform$OS.type == "windows") "file:///" else "file:"
+    paste0(prefix, file.path(dir_path, basename(path)))
   }
 }
