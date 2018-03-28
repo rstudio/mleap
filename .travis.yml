@@ -1,14 +1,8 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 language: R
-sudo: required
+sudo: false
 cache: packages
-
-apt_packages:
- - r-cran-rjava
-
-before_install:
- - R CMD javareconf 
 
 after_success:
     - Rscript -e 'covr::codecov()'
