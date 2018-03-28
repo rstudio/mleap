@@ -8,7 +8,7 @@ apt_packages:
  - openjdk-8-jdk
 
 install:
- - sudo R CMD javareconf 
+ - R CMD javareconf 
 
 after_success:
     - Rscript -e 'covr::codecov()'
