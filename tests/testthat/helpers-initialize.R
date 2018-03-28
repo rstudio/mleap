@@ -29,6 +29,7 @@ testthat_spark_connection <- function() {
       sparklyr::spark_connect(master = "local", version = version, config = config)
     }, error = function(e) {
       system("rm -rf $HOME/.ivy2")
+      system("rm -rf /home/travis/.m2")
       sparklyr::spark_connect(master = "local", version = version, config = config)
     })
     assign(".testthat_spark_connection", sc, envir = .GlobalEnv)
