@@ -1,3 +1,18 @@
+library(testthat)
+library(mleap)
+
+temp <- tempdir()
+
+if (!mleap:::maven_found()) {
+  maven_dir <- file.path(temp, "maven")
+  install_maven(dir = maven_dir)
+}
+
+if (!mleap:::mleap_found()) {
+  mleap_dir <- file.path(temp, "mleap/mleap-0.9.4")
+  install_mleap(dir = mleap_dir)
+}
+
 testthat_spark_connection <- function() {
   version <- Sys.getenv("SPARK_VERSION", unset = "2.2.0")
 

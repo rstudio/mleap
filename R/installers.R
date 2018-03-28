@@ -20,7 +20,7 @@ install_dir <- function(dir_name) {
 }
 
 resolve_maven_path <- function() {
-  maven_dir <- getOption("maven.home", install_dir("maven"))
+  maven_dir <- getOption("maven.home", .globals$maven_dir)
   maven_path <- list.files(maven_dir, full.names = TRUE, recursive = TRUE) %>%
     grep("/bin/mvn$", ., value = TRUE) %>%
     utils::head(1)
@@ -29,6 +29,10 @@ resolve_maven_path <- function() {
          call. = FALSE)
   
   maven_path
+}
+
+maven_found <- function() {
+  if (length(purrr::safely(resolve_maven_path)()$result)) TRUE else FALSE
 }
 
 #' Install Maven
@@ -41,6 +45,12 @@ resolve_maven_path <- function() {
 #' @importFrom purrr %||%
 #' @export
 install_maven <- function(dir = NULL) {
+  
+  if (maven_found()) {
+    message("Maven already installed.")
+    return(invisible(NULL))
+  }
+  
   maven_dir <- dir %||% install_dir("maven")
   if (!dir.exists(maven_dir))
     dir.create(maven_dir)
@@ -53,13 +63,22 @@ install_maven <- function(dir = NULL) {
                          exdir = maven_dir)
   if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
   file.remove(maven_path)
+  
+  .globals$maven_dir <- maven_dir
   message("Maven installation succeeded.")
   invisible(NULL)
 }
 
 resolve_mleap_path <- function() {
-  mleap_dir <- getOption("mleap.home", install_dir("mleap/mleap-0.9.4"))
+  mleap_dir <- getOption("mleap.home", .globals$mleap_dir)
+  if (!length(list.files(mleap_dir, recursive = TRUE))) {
+    stop("Can't find MLeap Specify options(mleap.home = ...) or run install_mleap().")
+  }
   mleap_dir
+}
+
+mleap_found <- function() {
+  if (length(purrr::safely(resolve_mleap_path)()$result)) TRUE else FALSE
 }
 
 #' Install MLeap runtime
@@ -68,6 +87,12 @@ resolve_mleap_path <- function() {
 #' @param restart_session Whether to restart R session after installation
 #' @export
 install_mleap <- function(dir = NULL, restart_session = TRUE) {
+  
+  if (mleap_found()) {
+    message("MLeap already installed.")
+    return(invisible(NULL))
+  }
+  
   mleap_dir <- dir %||% install_dir("mleap/mleap-0.9.4")
   if (!fs::dir_exists(mleap_dir))
     fs::dir_create(mleap_dir, recursive = TRUE)
@@ -76,6 +101,7 @@ install_mleap <- function(dir = NULL, restart_session = TRUE) {
   
   download_jars(mvn, "ml.combust.mleap:mleap-runtime_2.11:0.9.4", mleap_dir)
   download_jars(mvn, "ml.combust.mleap:mleap-spark_2.10:0.9.4", mleap_dir)
+  .globals$mleap_dir <- mleap_dir
   
   rJava::.jpackage("mleap",
                    morePaths = list.files(resolve_mleap_path(),
