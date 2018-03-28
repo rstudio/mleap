@@ -77,8 +77,9 @@ install_mleap <- function(dir = NULL, restart_session = TRUE) {
   download_jars(mvn, "ml.combust.mleap:mleap-runtime_2.11:0.9.4", mleap_dir)
   download_jars(mvn, "ml.combust.mleap:mleap-spark_2.10:0.9.4", mleap_dir)
   
-  if (restart_session && rstudioapi::hasFun("restartSession"))
-    rstudioapi::restartSession()
+  rJava::.jpackage("mleap",
+                   morePaths = list.files(resolve_mleap_path(),
+                                          full.names = TRUE))
   
   message("MLeap installation succeeded.")
   invisible(NULL)
