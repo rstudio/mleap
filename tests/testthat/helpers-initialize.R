@@ -24,6 +24,7 @@ testthat_spark_connection <- function() {
     options(sparklyr.na.omit.verbose = TRUE)
     options(sparklyr.na.action.verbose = TRUE)
     
+    system("rm -rf $HOME/.ivy2")
     sc <- sparklyr::spark_connect(master = "local", version = version, config = config)
     assign(".testthat_spark_connection", sc, envir = .GlobalEnv)
   }
