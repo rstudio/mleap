@@ -60,10 +60,10 @@ model
 ```
 
     ## MLeap Transformer
-    ## <9fcd7576-c32d-4d1d-a92e-04b2382a4ca1> 
-    ##   Name: pipeline_2d1c4a0665c3 
+    ## <4cc7a4af-b02a-4a9a-ace6-76240a1d492f> 
+    ##   Name: pipeline_245556d17ba2 
     ##   Format: json 
-    ##   MLeap Version: 0.9.0-SNAPSHOT
+    ##   MLeap Version: 0.10.0-SNAPSHOT
 
 We can retrieve the schema associated with the model:
 
