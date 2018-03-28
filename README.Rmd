@@ -10,6 +10,8 @@ output:
 library(mleap)
 ```
 
+[![Travis build status](https://travis-ci.org/rstudio/mleap.svg?branch=master)](https://travis-ci.org/rstudio/mleap) [![Coverage status](https://codecov.io/gh/rstudio/mleap/branch/master/graph/badge.svg)](https://codecov.io/github/rstudio/mleap?branch=master)
+
 **mleap** is a [sparklyr](http://spark.rstudio.com/) extension that provides an interface to [MLeap](https://github.com/combust/mleap), which allows us to take Spark pipelines to production.
 
 ## Getting started

@@ -1,3 +1,18 @@
+library(testthat)
+library(mleap)
+
+temp <- tempdir()
+
+if (!mleap:::maven_found()) {
+  maven_dir <- file.path(temp, "maven")
+  install_maven(dir = maven_dir)
+}
+
+if (!mleap:::mleap_found()) {
+  mleap_dir <- file.path(temp, "mleap/mleap-0.9.4")
+  install_mleap(dir = mleap_dir)
+}
+
 testthat_spark_connection <- function() {
   version <- Sys.getenv("SPARK_VERSION", unset = "2.2.0")
 
@@ -24,7 +39,14 @@ testthat_spark_connection <- function() {
     options(sparklyr.na.omit.verbose = TRUE)
     options(sparklyr.na.action.verbose = TRUE)
     
-    sc <- sparklyr::spark_connect(master = "local", version = version, config = config)
+    
+    sc <- tryCatch({
+      sparklyr::spark_connect(master = "local", version = version, config = config)
+    }, error = function(e) {
+      system("rm -rf $HOME/.ivy2")
+      system("rm -rf /home/travis/.m2")
+      sparklyr::spark_connect(master = "local", version = version, config = config)
+    })
     assign(".testthat_spark_connection", sc, envir = .GlobalEnv)
   }
   

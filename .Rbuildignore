@@ -7,3 +7,5 @@
 ^LICENSE\.md$
 ^configure\.R$
 ^derby\.log$
+^\.travis\.yml$
+^codecov\.yml$

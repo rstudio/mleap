@@ -19,7 +19,8 @@ Imports:
   purrr,
   fs,
   tibble,
-  rJava,
-  rstudioapi (>= 0.7)
+  rJava
 RoxygenNote: 6.0.1
-Suggests: testthat
+Suggests: 
+    testthat,
+    covr

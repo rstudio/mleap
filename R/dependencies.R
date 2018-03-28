@@ -15,7 +15,10 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
 #' @import sparklyr
 .onLoad <- function(libname, pkgname) {
   sparklyr::register_extension(pkgname)
+  jar_paths <- tryCatch(
+    list.files(resolve_mleap_path(), full.names = TRUE),
+    error = function(e) ""
+  )
   rJava::.jpackage(pkgname, lib.loc = libname, 
-                   morePaths = list.files(resolve_mleap_path(),
-                                          full.names = TRUE))
+                   morePaths = jar_paths)
 }
