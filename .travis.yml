@@ -7,7 +7,7 @@ cache: packages
 apt_packages:
  - openjdk-8-jdk
 
-before_install:
+install:
  - sudo R CMD javareconf 
 
 after_success:
