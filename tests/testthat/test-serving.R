@@ -3,6 +3,7 @@ context("save/load/predict")
 sc <- testthat_spark_connection()
 
 test_that("We can export and use pipeline model", {
+  skip_on_cran()
   library(sparklyr)
   mtcars_tbl <- sdf_copy_to(sc, mtcars, overwrite = TRUE)
   pipeline <- ml_pipeline(sc) %>%
@@ -45,6 +46,7 @@ test_that("We can export and use pipeline model", {
 })
 
 test_that("We can export a list of transformers", {
+  skip_on_cran()
   library(sparklyr)
   iris_tbl <- sdf_copy_to(sc, iris, overwrite = TRUE)
   string_indexer <- ft_string_indexer(sc, "Species", "label", dataset = iris_tbl)
