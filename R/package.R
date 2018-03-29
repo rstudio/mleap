@@ -1,5 +1,13 @@
 .globals <- new.env(parent = emptyenv())
-.globals$maven_dir <- install_dir("maven")
-.globals$mleap_dir <- install_dir("mleap/mleap-0.9.4")
+
+versions <- jsonlite::fromJSON(system.file(file.path("extdata", "default_versions.json"), 
+                               package = packageName()
+                               )
+                   )
+.globals$default_maven_version <- versions$maven
+.globals$default_mleap_version <- versions$mleap
+
+.globals$maven_dir <- NULL
+.globals$mleap_dir <- NULL
 
 utils::globalVariables(".")

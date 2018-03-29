@@ -20,7 +20,7 @@ install_dir <- function(dir_name) {
 }
 
 resolve_maven_path <- function() {
-  maven_dir <- getOption("maven.home", .globals$maven_dir)
+  maven_dir <- getOption("maven.home", .globals$maven_dir) %||% install_dir("maven")
   maven_path <- list.files(maven_dir, full.names = TRUE, recursive = TRUE) %>%
     grep("/bin/mvn$", ., value = TRUE) %>%
     utils::head(1)
@@ -41,23 +41,31 @@ maven_found <- function() {
 #' 
 #' @param dir (Optional) Directory to install maven in.
 #'   Defaults to \code{maven/} under user's home directory.
+#' @param version Version of Maven to install, defaults to the latest version tested with this package.
 #' 
-#' @importFrom purrr %||%
 #' @export
-install_maven <- function(dir = NULL) {
+install_maven <- function(dir = NULL, version = NULL) {
   
   if (maven_found()) {
     message("Maven already installed.")
     return(invisible(NULL))
   }
   
+  version <- version %||% .globals$default_maven_version
+  
   maven_dir <- dir %||% install_dir("maven")
   if (!dir.exists(maven_dir))
     dir.create(maven_dir)
   
-  maven_path <- file.path(maven_dir, "apache-maven-3.5.2-bin.tar.gz")
+  maven_path <- file.path(
+    maven_dir, 
+    sprintf("apache-maven-%s-bin.tar.gz", version)
+  )
   
-  utils::download.file("http://apache.mirrors.lucidnetworks.net/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz", maven_path)
+  utils::download.file(
+    get_maven_download_link(version = version),
+    maven_path
+  )
   
   status <- utils::untar(maven_path, compressed = "gzip",
                          exdir = maven_dir)
@@ -70,11 +78,30 @@ install_maven <- function(dir = NULL) {
 }
 
 resolve_mleap_path <- function() {
-  mleap_dir <- getOption("mleap.home", .globals$mleap_dir)
-  if (!length(list.files(mleap_dir, recursive = TRUE))) {
-    stop("Can't find MLeap Specify options(mleap.home = ...) or run install_mleap().")
-  }
-  mleap_dir
+  mleap_dir <- getOption("mleap.home", .globals$mleap_dir) %||% install_dir("mleap")
+  runtime_jars <- list.files(mleap_dir, full.names = TRUE, recursive = TRUE) %>%
+    grep("mleap-runtime", ., value = TRUE)
+  
+  if (!length(runtime_jars))
+    stop("Can't find MLeap. Specify options(mleap.home = ...) or run install_mleap().")
+  
+  versions <- purrr::map(
+    runtime_jars, 
+    ~ .x %>% 
+      strsplit("-") %>%
+      unlist() %>%
+      utils::tail(1) %>%
+      gsub("\\.jar$", "", .) %>%
+      numeric_version()
+  )
+  
+  latest_version <- versions %>%
+    purrr::reduce(~ (if (.x > .y) .x else .y)) 
+  latest_index <- versions %>%
+    purrr::map(~ .x == latest_version) %>%
+    which.max()
+  
+  dirname(runtime_jars[[latest_index]])
 }
 
 mleap_found <- function() {
@@ -84,23 +111,24 @@ mleap_found <- function() {
 #' Install MLeap runtime
 #' 
 #' @param dir (Optional) Directory to save the jars
-#' @param restart_session Whether to restart R session after installation
+#' @param version Version of MLeap to install, defaults to the latest version tested with this package.
 #' @export
-install_mleap <- function(dir = NULL, restart_session = TRUE) {
+install_mleap <- function(dir = NULL, version = NULL) {
   
   if (mleap_found()) {
     message("MLeap already installed.")
     return(invisible(NULL))
   }
   
-  mleap_dir <- dir %||% install_dir("mleap/mleap-0.9.4")
+  version <- version %||% .globals$default_mleap_version
+  mleap_dir <- dir %||% install_dir(paste0("mleap/mleap-", version))
   if (!fs::dir_exists(mleap_dir))
     fs::dir_create(mleap_dir, recursive = TRUE)
   
   mvn <- resolve_maven_path()
   
-  download_jars(mvn, "ml.combust.mleap:mleap-runtime_2.11:0.9.4", mleap_dir)
-  download_jars(mvn, "ml.combust.mleap:mleap-spark_2.10:0.9.4", mleap_dir)
+  download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir)
+  download_jars(mvn, paste0("ml.combust.mleap:mleap-spark_2.11:", version), mleap_dir)
   .globals$mleap_dir <- mleap_dir
   
   rJava::.jpackage("mleap",
@@ -159,4 +187,16 @@ download_jars <- function(mvn, dependency, install_dir) {
     stop(paste0("Installation failed. Can't copy dependencies for ", dependency),
          call. = FALSE
     )
+}
+
+get_preferred_apache_mirror <- function() {
+  mirrors_info <- jsonlite::fromJSON("https://apache.org/dyn/closer.cgi?as_json=1")
+  mirrors_info$preferred
+}
+
+get_maven_download_link <- function(version) {
+  paste0(
+    get_preferred_apache_mirror(),
+    sprintf("maven/maven-3/%s/binaries/apache-maven-%s-bin.tar.gz", version, version)
+  )
 }
