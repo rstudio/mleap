@@ -4,11 +4,13 @@
 \alias{install_maven}
 \title{Install Maven}
 \usage{
-install_maven(dir = NULL)
+install_maven(dir = NULL, version = NULL)
 }
 \arguments{
 \item{dir}{(Optional) Directory to install maven in.
 Defaults to \code{maven/} under user's home directory.}
+
+\item{version}{Version of Maven to install, defaults to the latest version tested with this package.}
 }
 \description{
 This function installs Apache Maven.

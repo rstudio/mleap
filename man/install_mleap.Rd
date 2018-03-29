@@ -4,12 +4,12 @@
 \alias{install_mleap}
 \title{Install MLeap runtime}
 \usage{
-install_mleap(dir = NULL, restart_session = TRUE)
+install_mleap(dir = NULL, version = NULL)
 }
 \arguments{
 \item{dir}{(Optional) Directory to save the jars}
 
-\item{restart_session}{Whether to restart R session after installation}
+\item{version}{Version of MLeap to install, defaults to the latest version tested with this package.}
 }
 \description{
 Install MLeap runtime
