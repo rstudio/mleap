@@ -67,10 +67,23 @@ install_maven <- function(dir = NULL, version = NULL) {
     maven_path
   )
   
+  checksum_url <- paste0("https://www.apache.org/dist/maven/maven-3/",
+                    version,
+                    "/binaries/apache-maven-",
+                    version,
+                    "-bin.tar.gz.md5")
+  
+  if (!identical(unname(tools::md5sum(normalizePath(maven_path))),
+                 readChar(checksum_url, nchars = 32)
+  )) {
+    fs::file_delete(maven_path)
+    stop("Maven installation failed. Unable to verify checksum.")
+  }
+  
   status <- utils::untar(maven_path, compressed = "gzip",
                          exdir = maven_dir)
   if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
-  file.remove(maven_path)
+  fs::file_delete(maven_path)
   
   .globals$maven_dir <- maven_dir
   message("Maven installation succeeded.")
