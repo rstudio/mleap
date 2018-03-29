@@ -11,3 +11,6 @@ resolve_path <- function(path) {
     paste0(prefix, file.path(dir_path, basename(path)))
   }
 }
+
+#' @importFrom purrr %||%
+NULL

@@ -7,7 +7,7 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
       )
     ),
     packages = c(
-      sprintf("ml.combust.mleap:mleap-spark_%s:0.9.4", scala_version)
+      sprintf("ml.combust.mleap:mleap-spark_%s:%s", scala_version, .globals$default_mleap_version)
     )
   )
 }

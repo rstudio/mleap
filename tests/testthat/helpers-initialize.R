@@ -9,7 +9,7 @@ if (!mleap:::maven_found()) {
 }
 
 if (!mleap:::mleap_found()) {
-  mleap_dir <- file.path(temp, "mleap/mleap-0.9.4")
+  mleap_dir <- file.path(temp, "mleap")
   install_mleap(dir = mleap_dir)
 }
 
