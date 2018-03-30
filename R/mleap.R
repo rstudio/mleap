@@ -13,14 +13,15 @@ new_mleap_transformer <- function(jobj) {
   )
 }
 
+# no covered because uid different each run
 #' @export
-print.mleap_transformer <- function(x, ...) {
+print.mleap_transformer <- function(x, ...) { # nocov start
    cat("MLeap Transformer\n")
    cat(paste0("<", x$uid, ">"), "\n")
    cat(paste0("  ", "Name: ", x$name), "\n")
    cat(paste0("  ", "Format: ", x$format), "\n")
    cat(paste0("  ", "MLeap Version: ", x$mleap_version))
-}
+} # nocov end
 
 #' MLeap model schema
 #' 

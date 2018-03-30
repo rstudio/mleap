@@ -24,7 +24,7 @@ test_that("We can export and use pipeline model", {
   # load model
   model <- mleap_load_bundle(model_path)
 
-  # # check model schema
+  # check model schema
   expect_known_output(
     mleap_model_schema(model),
     output_file("mtcars_model_schema.txt"),
