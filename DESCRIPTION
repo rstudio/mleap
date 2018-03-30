@@ -3,7 +3,8 @@ Type: Package
 Title: R Interface to MLeap
 Version: 0.1.0
 Authors@R: c(
-  person("Kevin", "Kuo", role = c("aut", "cre"), email = "kevin.kuo@rstudio.com")
+  person("Kevin", "Kuo", role = c("aut", "cre"), email = "kevin.kuo@rstudio.com"),
+  comment = c(ORCID = "0000-0001-7803-7901")
   )
 Description: A sparklyr <https://spark.rstudio.com> extension that provides
   an interface to MLeap <https://github.com/combust/mleap>, an open source library
