@@ -13,12 +13,14 @@ test_that("install_maven() detects existing installation", {
 })
 
 test_that("install_mleap() works", {
+  skip_on_cran()
   if (mleap:::mleap_found()) skip("MLeap already installed")
   expect_message(install_mleap(dir = mleap_dir),
                  "MLeap installation succeeded\\.")
 })
 
 test_that("install_mleap() detects existing installation", {
+  skip_on_cran()
   expect_message(install_mleap(dir = mleap_dir),
                  "MLeap already installed\\.")
 })
