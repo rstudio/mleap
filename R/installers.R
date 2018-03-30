@@ -161,11 +161,14 @@ download_jars <- function(mvn, dependency, install_dir) {
     unlist() %>%
     `[`(2:3)
   
+  repo <- getOption("maven.repo", .globals$default_maven_repo)
+  
   run_get_pom <- system2(
     mvn, 
     c("dependency:get", 
            paste0("-Dartifact=", dependency, ":pom"), 
-           paste0("-Ddest=", temp_dir)
+           paste0("-Ddest=", temp_dir),
+           paste0("-DremoteRepositories=", repo)
            ),
     stdout = FALSE
   )
@@ -183,7 +186,8 @@ download_jars <- function(mvn, dependency, install_dir) {
     mvn,
     c("dependency:get",
       paste0("-Dartifact=", dependency),
-      paste0(" -Ddest=", install_dir)
+      paste0(" -Ddest=", install_dir),
+      paste0("-DremoteRepositories=", repo)
     ),
     stdout = FALSE
   )
