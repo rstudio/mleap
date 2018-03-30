@@ -44,7 +44,7 @@ transformed_tbl <- ml_transform(pipeline_model, mtcars_tbl)
 
 # Export model
 model_path <- file.path(tempdir(), "mtcars_model.zip")
-ml_save_bundle(pipeline_model, transformed_tbl, model_path)
+ml_write_bundle(pipeline_model, transformed_tbl, model_path)
 
 # Disconnect from Spark
 spark_disconnect(sc)
@@ -60,8 +60,8 @@ model
 ```
 
     ## MLeap Transformer
-    ## <3a5eefa3-a5a8-4d23-8534-90179e7f416b> 
-    ##   Name: pipeline_13b80b3588a0 
+    ## <c956f2d0-fed8-47c8-a813-00fff9e9fe2f> 
+    ##   Name: pipeline_deafd20c3d43 
     ##   Format: json 
     ##   MLeap Version: 0.9.5
 

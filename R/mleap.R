@@ -89,7 +89,7 @@ mleap_load_bundle <- function(path) {
 #' @param path Where to save the bundle.
 #' @param overwrite Whether to overwrite an existing file, defaults to \code{FALSE}.
 #' @export
-ml_save_bundle <- function(x, dataset, path, overwrite = FALSE) {
+ml_write_bundle <- function(x, dataset, path, overwrite = FALSE) {
   stages <- if (purrr::is_bare_list(x)) {
     purrr::map(x, sparklyr::spark_jobj)
   } else {
