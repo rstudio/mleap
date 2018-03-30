@@ -1,9 +1,9 @@
 context("save/load/predict")
 
-sc <- testthat_spark_connection()
-
 test_that("We can export and use pipeline model", {
   skip_on_cran()
+  sc <- testthat_spark_connection()
+  
   library(sparklyr)
   mtcars_tbl <- sdf_copy_to(sc, mtcars, overwrite = TRUE)
   pipeline <- ml_pipeline(sc) %>%
@@ -24,7 +24,7 @@ test_that("We can export and use pipeline model", {
   # load model
   model <- mleap_load_bundle(model_path)
 
-  # # check model schema
+  # check model schema
   expect_known_output(
     mleap_model_schema(model),
     output_file("mtcars_model_schema.txt"),
@@ -47,6 +47,8 @@ test_that("We can export and use pipeline model", {
 
 test_that("We can export a list of transformers", {
   skip_on_cran()
+  sc <- testthat_spark_connection()
+  
   library(sparklyr)
   iris_tbl <- sdf_copy_to(sc, iris, overwrite = TRUE)
   string_indexer <- ft_string_indexer(sc, "Species", "label", dataset = iris_tbl)

@@ -1,0 +1,7 @@
+[
+  {
+    "maven_version": "3.5.3",
+    "mleap_version": "0.9.5",
+    "maven_repo": "https://oss.sonatype.org/content/repositories/releases"
+  }
+]

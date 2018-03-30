@@ -13,7 +13,7 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
 }
 
 #' @import sparklyr
-.onLoad <- function(libname, pkgname) {
+.onLoad <- function(libname, pkgname) { # nocov start
   sparklyr::register_extension(pkgname)
   jar_paths <- tryCatch(
     list.files(resolve_mleap_path(), full.names = TRUE),
@@ -21,4 +21,4 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
   )
   rJava::.jpackage(pkgname, lib.loc = libname, 
                    morePaths = jar_paths)
-}
+} # nocov end

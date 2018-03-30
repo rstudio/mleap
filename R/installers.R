@@ -133,13 +133,15 @@ install_mleap <- function(dir = NULL, version = NULL) {
     return(invisible(NULL))
   }
   
+  mvn <- resolve_maven_path()
+  if (!length(mvn)) stop("MLeap installation failed. Maven must be installed.")
+  
   version <- version %||% .globals$default_mleap_version
   mleap_dir <- dir %||% install_dir(paste0("mleap/mleap-", version))
   if (!fs::dir_exists(mleap_dir))
     fs::dir_create(mleap_dir, recursive = TRUE)
   
-  mvn <- resolve_maven_path()
-  
+  message("Downloading MLeap...")
   download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir)
   download_jars(mvn, paste0("ml.combust.mleap:mleap-spark_2.11:", version), mleap_dir)
   .globals$mleap_dir <- mleap_dir
@@ -160,9 +162,16 @@ download_jars <- function(mvn, dependency, install_dir) {
     unlist() %>%
     `[`(2:3)
   
-  run_get_pom <- system(
-    paste0(mvn, " dependency:get -Dartifact=", dependency, ":pom -Ddest=", temp_dir),
-    ignore.stdout = TRUE
+  repo <- getOption("maven.repo", .globals$default_maven_repo)
+  
+  run_get_pom <- system2(
+    mvn, 
+    c("dependency:get", 
+           paste0("-Dartifact=", dependency, ":pom"), 
+           paste0("-Ddest=", temp_dir),
+           paste0("-DremoteRepositories=", repo)
+           ),
+    stdout = FALSE
   )
   
   if (!identical(run_get_pom, 0L))
@@ -174,13 +183,14 @@ download_jars <- function(mvn, dependency, install_dir) {
     temp_dir, paste0(artifact_version[[1]], "-", artifact_version[[2]], ".pom")
   )
   # package_java_dir <-  file.path(package_path, "java/")
-  run_get_artifact <- system(
-    paste0(mvn, 
-           " dependency:get -Dartifact=",
-           dependency,
-           " -Ddest=",
-           install_dir),
-    ignore.stdout = TRUE
+  run_get_artifact <- system2(
+    mvn,
+    c("dependency:get",
+      paste0("-Dartifact=", dependency),
+      paste0(" -Ddest=", install_dir),
+      paste0("-DremoteRepositories=", repo)
+    ),
+    stdout = FALSE
   )
   
   if (!identical(run_get_artifact, 0L))
@@ -188,12 +198,14 @@ download_jars <- function(mvn, dependency, install_dir) {
          call. = FALSE
     )
   
-  run_get_deps <- system(
-    paste0(mvn,
-           " dependency:copy-dependencies -f ", pom_path,
-           " -DoutputDirectory=",
-           install_dir),
-    ignore.stdout = TRUE
+  run_get_deps <- system2(
+    mvn,
+    c("dependency:copy-dependencies",
+      "-f", 
+      pom_path,
+      paste0("-DoutputDirectory=", install_dir)
+    ),
+    stdout = FALSE
   )
   
   if (!identical(run_get_deps, 0L))
