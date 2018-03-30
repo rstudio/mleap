@@ -133,14 +133,15 @@ install_mleap <- function(dir = NULL, version = NULL) {
     return(invisible(NULL))
   }
   
+  mvn <- resolve_maven_path()
+  if (!length(mvn)) stop("MLeap installation failed. Maven must be installed.")
+  
   version <- version %||% .globals$default_mleap_version
   mleap_dir <- dir %||% install_dir(paste0("mleap/mleap-", version))
   if (!fs::dir_exists(mleap_dir))
     fs::dir_create(mleap_dir, recursive = TRUE)
   
-  mvn <- resolve_maven_path()
-  if (!length(mvn)) stop("MLeap installation failed. Maven must be installed.")
-  
+  message("Downloading MLeap...")
   download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir)
   download_jars(mvn, paste0("ml.combust.mleap:mleap-spark_2.11:", version), mleap_dir)
   .globals$mleap_dir <- mleap_dir
