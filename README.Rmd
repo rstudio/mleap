@@ -52,7 +52,7 @@ transformed_tbl <- ml_transform(pipeline_model, mtcars_tbl)
 
 # Export model
 model_path <- file.path(tempdir(), "mtcars_model.zip")
-ml_save_bundle(pipeline_model, transformed_tbl, model_path)
+ml_write_bundle(pipeline_model, transformed_tbl, model_path)
 
 # Disconnect from Spark
 spark_disconnect(sc)

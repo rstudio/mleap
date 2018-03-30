@@ -3,7 +3,7 @@
 S3method(print,mleap_transformer)
 export(install_maven)
 export(install_mleap)
-export(ml_save_bundle)
+export(ml_write_bundle)
 export(mleap_load_bundle)
 export(mleap_model_schema)
 export(mleap_transform)

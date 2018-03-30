@@ -14,7 +14,7 @@ test_that("We can export and use pipeline model", {
   
   # export model
   model_path <- file.path(tempdir(), "mtcars_model.zip")
-  expect_message(ml_save_bundle(pipeline_model, 
+  expect_message(ml_write_bundle(pipeline_model, 
                  sparklyr::ml_transform(pipeline_model, mtcars_tbl),
                  model_path,
                  overwrite = TRUE),
@@ -65,7 +65,7 @@ test_that("We can export a list of transformers", {
   model_path <- file.path(tempdir(), "iris_model.zip")
   
   expect_message(
-    ml_save_bundle(stages, transformed_tbl, model_path, overwrite = TRUE),
+    ml_write_bundle(stages, transformed_tbl, model_path, overwrite = TRUE),
     "Model successfully exported"
   )
   
