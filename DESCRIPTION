@@ -9,6 +9,8 @@ Authors@R: c(
 Description: A sparklyr <https://spark.rstudio.com> extension that provides
   an interface to MLeap <https://github.com/combust/mleap>, an open source library
   that enables exporting and serving of Spark pipelines.
+URL: https://github.com/rstudio/mleap
+BugReports: https://github.com/rstudio/mleap/issues
 License: Apache License (>= 2.0)
 Encoding: UTF-8
 LazyData: true
