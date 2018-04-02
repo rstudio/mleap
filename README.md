@@ -8,10 +8,16 @@ R interface for MLeap
 Getting started
 ---------------
 
-**mleap** can be installed via
+**mleap** can be installed from CRAN via
 
 ``` r
-devtools::install_github("kevinykuo/mleap")
+install.packages("mleap")
+```
+
+or, for the latest development version from GitHub, using
+
+``` r
+devtools::install_github("rstudio/mleap")
 ```
 
 Once mleap has been installed, we can install the external dependencies using
@@ -60,8 +66,8 @@ model
 ```
 
     ## MLeap Transformer
-    ## <c956f2d0-fed8-47c8-a813-00fff9e9fe2f> 
-    ##   Name: pipeline_deafd20c3d43 
+    ## <7cee3a34-4a1f-4b4f-8f11-098728d46085> 
+    ##   Name: pipeline_a50967ed556e 
     ##   Format: json 
     ##   MLeap Version: 0.9.5
 

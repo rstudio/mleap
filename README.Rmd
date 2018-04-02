@@ -16,10 +16,16 @@ library(mleap)
 
 ## Getting started
 
-**mleap** can be installed via
+**mleap** can be installed from CRAN via
 
 ```{r eval = FALSE}
-devtools::install_github("kevinykuo/mleap")
+install.packages("mleap")
+```
+
+or, for the latest development version from GitHub, using
+
+```{r eval = FALSE}
+devtools::install_github("rstudio/mleap")
 ```
 
 Once mleap has been installed, we can install the external dependencies using

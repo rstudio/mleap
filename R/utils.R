@@ -7,9 +7,13 @@ resolve_path <- function(path) {
       normalizePath(mustWork = FALSE, winslash = "/") %>%
       dirname() %>%
       tools::file_path_as_absolute()
-    prefix <- if (.Platform$OS.type == "windows") "file:///" else "file:"
-    paste0(prefix, file.path(dir_path, basename(path)))
+    file.path(dir_path, basename(path))
   }
+}
+
+uri <- function(path) {
+  prefix <- if (.Platform$OS.type == "windows") "file:///" else "file:"
+  paste0(prefix, path)
 }
 
 #' @importFrom purrr %||%

@@ -99,15 +99,8 @@ ml_write_bundle <- function(x, dataset, path, overwrite = FALSE) {
   sc <- sparklyr::spark_connection(stages[[1]])
   sdf <- sparklyr::spark_dataframe(dataset)
   path <- resolve_path(path)
-  
-  is_local <- stages[[1]] %>%
-    sparklyr::spark_connection() %>%
-    sparklyr::spark_context() %>%
-    sparklyr::invoke("isLocal")
-  
-  # for local spark connection, we can check to see if
-  #   file exists on local filesystem
-  if (is_local && fs::file_exists(path)) {
+
+  if (fs::file_exists(path)) {
     if (!overwrite) {
       stop(paste0("Can't save bundle file: ", basename(path), " already exists."),
            call. = FALSE)
@@ -116,7 +109,7 @@ ml_write_bundle <- function(x, dataset, path, overwrite = FALSE) {
   }
   
   sparklyr::invoke_static(sc, "mleap.Main", "exportArrayToBundle",
-                          sdf, path, stages)
+                          sdf, uri(path), stages)
   message("Model successfully exported.")
   invisible(NULL)
 }
