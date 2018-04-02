@@ -21,6 +21,14 @@ test_that("We can export and use pipeline model", {
                  "Model successfully exported"
   )
   
+  # error message when file exists
+  expect_error(ml_write_bundle(pipeline_model, 
+                                 sparklyr::ml_transform(pipeline_model, mtcars_tbl),
+                                 model_path,
+                                 overwrite = FALSE),
+                 "*already exists\\.$"
+  )
+  
   # load model
   model <- mleap_load_bundle(model_path)
 
