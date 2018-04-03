@@ -14,3 +14,8 @@ install_mleap(dir = NULL, version = NULL)
 \description{
 Install MLeap runtime
 }
+\examples{
+\dontrun{
+install_mleap()
+}
+}

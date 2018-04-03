@@ -43,6 +43,11 @@ maven_found <- function() {
 #'   Defaults to \code{maven/} under user's home directory.
 #' @param version Version of Maven to install, defaults to the latest version tested with this package.
 #' 
+#' @examples 
+#' \dontrun{
+#' install_maven()
+#' }
+#' 
 #' @export
 install_maven <- function(dir = NULL, version = NULL) {
   
@@ -125,6 +130,11 @@ mleap_found <- function() {
 #' 
 #' @param dir (Optional) Directory to save the jars
 #' @param version Version of MLeap to install, defaults to the latest version tested with this package.
+#' 
+#' @examples 
+#' \dontrun{
+#' install_mleap()
+#' }
 #' @export
 install_mleap <- function(dir = NULL, version = NULL) {
   

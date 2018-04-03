@@ -15,3 +15,9 @@ Defaults to \code{maven/} under user's home directory.}
 \description{
 This function installs Apache Maven.
 }
+\examples{
+\dontrun{
+install_maven()
+}
+
+}
