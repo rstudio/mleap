@@ -3,7 +3,7 @@
 This is a resubmission. Changes:
 
 - Add SystemRequirements to DESCRIPTION.
-- Use sha256 checksum instead of md5, which is no longer available from Apache, for checking Maven download.
+- Fix failing test by using sha256 checksum instead of md5, which is no longer available from Apache, for checking Maven download.
 
 ## Test environments
 * local OS X install, R 3.4.4
