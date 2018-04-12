@@ -22,7 +22,8 @@ Imports:
   purrr,
   fs,
   tibble,
-  rJava
+  rJava,
+  digest
 RoxygenNote: 6.0.1
 Suggests: 
     testthat,
