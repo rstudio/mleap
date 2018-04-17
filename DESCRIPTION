@@ -1,6 +1,6 @@
 Package: mleap
 Type: Package
-Title: Interface to MLeap
+Title: Interface to 'MLeap'
 Version: 0.1.0
 Authors@R: c(
   person("Kevin", "Kuo", role = c("aut", "cre"), email = "kevin.kuo@rstudio.com",
@@ -12,6 +12,7 @@ Description: A 'sparklyr' <https://spark.rstudio.com> extension that provides
 URL: https://github.com/rstudio/mleap
 BugReports: https://github.com/rstudio/mleap/issues
 License: Apache License (>= 2.0)
+SystemRequirements: Apache Spark 2.0+, Apache Maven 3.5+, Java JDK 8, MLeap Runtime 0.9.6+
 Encoding: UTF-8
 LazyData: true
 Depends:
@@ -22,7 +23,8 @@ Imports:
   purrr,
   fs,
   tibble,
-  rJava
+  rJava,
+  digest
 RoxygenNote: 6.0.1
 Suggests: 
     testthat,

@@ -1,7 +1,14 @@
+## Resubmission
+
+This is a resubmission. Changes:
+
+- Add SystemRequirements to DESCRIPTION.
+- Fix failing test by using sha256 checksum instead of md5, which is no longer available from Apache, for checking Maven download.
+
 ## Test environments
 * local OS X install, R 3.4.4
 * ubuntu 14.04 (on travis-ci), R 3.4.4
-* win-builder (devel and release)
+* win-builder (devel)
 
 ## R CMD check results
 
