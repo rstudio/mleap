@@ -182,11 +182,14 @@ download_jars <- function(mvn, dependency, install_dir) {
            paste0("-Ddest=", temp_dir),
            paste0("-DremoteRepositories=", repo)
            ),
-    stdout = FALSE
+    stdout = TRUE,
+    stderr = TRUE
   )
   
-  if (!identical(run_get_pom, 0L))
+  if (identical(attr(run_get_pom, "status"), 1L))
     stop(paste0("Installation failed. Can't download pom for ", dependency),
+         "\n",
+         paste0(run_get_pom, collapse = "\n"),
          call. = FALSE
     )
   
@@ -201,11 +204,14 @@ download_jars <- function(mvn, dependency, install_dir) {
       paste0(" -Ddest=", install_dir),
       paste0("-DremoteRepositories=", repo)
     ),
-    stdout = FALSE
+    stdout = TRUE,
+    stderr = TRUE
   )
   
-  if (!identical(run_get_artifact, 0L))
+  if (identical(attr(run_get_artifact, "status"), 1L))
     stop(paste0("Installation failed. Can't download dependencies for ", dependency),
+         "\n",
+         paste0(run_get_artifact, collapse = "\n"),
          call. = FALSE
     )
   
