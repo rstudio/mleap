@@ -24,9 +24,12 @@ resolve_maven_path <- function() {
   maven_path <- list.files(maven_dir, full.names = TRUE, recursive = TRUE) %>%
     grep("/bin/mvn$", ., value = TRUE) %>%
     utils::head(1)
-  if (is.null(maven_path))
+  if (!length(maven_path))
     stop("Can't find Maven. Specify options(maven.home = ...) or run install_maven().",
          call. = FALSE)
+  
+  if (identical(.Platform$OS.type, "windows"))
+    maven_path <- paste0(maven_path, ".cmd")
   
   maven_path
 }
@@ -73,10 +76,10 @@ install_maven <- function(dir = NULL, version = NULL) {
   )
   
   checksum_url <- paste0("https://www.apache.org/dist/maven/maven-3/",
-                    version,
-                    "/binaries/apache-maven-",
-                    version,
-                    "-bin.tar.gz.sha256")
+                         version,
+                         "/binaries/apache-maven-",
+                         version,
+                         "-bin.tar.gz.sha256")
   
   if (!identical(digest::digest(file = normalizePath(maven_path),
                                 algo = "sha256"),
@@ -175,21 +178,21 @@ download_jars <- function(mvn, dependency, install_dir) {
   
   repo <- getOption("maven.repo", .globals$default_maven_repo)
   
-  run_get_pom <- system2(
+  args_get_pom <- list(
     mvn, 
     c("dependency:get", 
-           paste0("-Dartifact=", dependency, ":pom"), 
-           paste0("-Ddest=", temp_dir),
-           paste0("-DremoteRepositories=", repo)
-           ),
-    stdout = TRUE,
-    stderr = TRUE
+      paste0("-Dartifact=", dependency, ":pom"), 
+      paste0("-Ddest=", temp_dir),
+      paste0("-DremoteRepositories=", repo)
+    )
   )
   
-  if (identical(attr(run_get_pom, "status"), 1L))
+  result_get_pom <- execute_command(args_get_pom)
+  
+  if (!command_success(result_get_pom))
     stop(paste0("Installation failed. Can't download pom for ", dependency),
          "\n",
-         paste0(run_get_pom, collapse = "\n"),
+         paste0(result_get_pom, collapse = "\n"),
          call. = FALSE
     )
   
@@ -197,35 +200,35 @@ download_jars <- function(mvn, dependency, install_dir) {
     temp_dir, paste0(artifact_version[[1]], "-", artifact_version[[2]], ".pom")
   )
   # package_java_dir <-  file.path(package_path, "java/")
-  run_get_artifact <- system2(
+  
+  args_get_artifact <- list(
     mvn,
     c("dependency:get",
       paste0("-Dartifact=", dependency),
       paste0(" -Ddest=", install_dir),
       paste0("-DremoteRepositories=", repo)
-    ),
-    stdout = TRUE,
-    stderr = TRUE
+    )
   )
+  result_get_artifact <- execute_command(args_get_artifact)
   
-  if (identical(attr(run_get_artifact, "status"), 1L))
+  if (!command_success(result_get_artifact))
     stop(paste0("Installation failed. Can't download dependencies for ", dependency),
          "\n",
-         paste0(run_get_artifact, collapse = "\n"),
+         paste0(result_get_artifact, collapse = "\n"),
          call. = FALSE
     )
   
-  run_get_deps <- system2(
+  args_get_deps <- list(
     mvn,
     c("dependency:copy-dependencies",
       "-f", 
       pom_path,
       paste0("-DoutputDirectory=", install_dir)
-    ),
-    stdout = FALSE
+    )
   )
+  result_get_deps <- execute_command(args_get_deps)
   
-  if (!identical(run_get_deps, 0L))
+  if (!command_success(result_get_deps))
     stop(paste0("Installation failed. Can't copy dependencies for ", dependency),
          call. = FALSE
     )
@@ -241,4 +244,21 @@ get_maven_download_link <- function(version) {
     get_preferred_apache_mirror(),
     sprintf("maven/maven-3/%s/binaries/apache-maven-%s-bin.tar.gz", version, version)
   )
+}
+
+execute_command <- function(args) {
+  if (identical(.Platform$OS.type, "windows")) {
+    result <- shell(paste0(unlist(args), collapse = " "),
+          ignore.stdout = TRUE
+    )
+    if (identical(result, 0L)) attr(result, "status") <- 0L
+  } else {
+    result <- do.call(system2, c(args, stdout = TRUE, stderr = TRUE))
+    if (is.null(attr(result, "status"))) attr(result, "status") <- 0L
+  }
+  result
+}
+
+command_success <- function(result) {
+  identical(attr(result, "status"), 0L)
 }
