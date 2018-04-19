@@ -24,9 +24,12 @@ resolve_maven_path <- function() {
   maven_path <- list.files(maven_dir, full.names = TRUE, recursive = TRUE) %>%
     grep("/bin/mvn$", ., value = TRUE) %>%
     utils::head(1)
-  if (is.null(maven_path))
+  if (!length(maven_path))
     stop("Can't find Maven. Specify options(maven.home = ...) or run install_maven().",
          call. = FALSE)
+  
+  if (identical(.Platform$OS.type, "windows"))
+    maven_path <- paste0(maven_path, ".cmd")
   
   maven_path
 }
@@ -73,10 +76,10 @@ install_maven <- function(dir = NULL, version = NULL) {
   )
   
   checksum_url <- paste0("https://www.apache.org/dist/maven/maven-3/",
-                    version,
-                    "/binaries/apache-maven-",
-                    version,
-                    "-bin.tar.gz.sha256")
+                         version,
+                         "/binaries/apache-maven-",
+                         version,
+                         "-bin.tar.gz.sha256")
   
   if (!identical(digest::digest(file = normalizePath(maven_path),
                                 algo = "sha256"),
@@ -96,35 +99,52 @@ install_maven <- function(dir = NULL, version = NULL) {
   invisible(NULL)
 }
 
-resolve_mleap_path <- function() {
-  mleap_dir <- getOption("mleap.home", .globals$mleap_dir) %||% install_dir("mleap")
+#' Find existing MLeap installations
+#' 
+#' @return A data frame of MLeap Runtime installation versions and
+#'   their locations.
+#' 
+#' @export
+mleap_installed_versions <- function() {
+  mleap_dir <- .globals$mleap_dir %||% install_dir("mleap")
+  dirs <- c(getOption("mleap.home"), list.files(mleap_dir, full.names = TRUE))
+  versions <- dirs %>%
+    purrr::map_chr(~ gsub("mleap-", "", basename(.x)))
+  
+  data.frame(mleap = versions, dir = dirs,
+             stringsAsFactors = FALSE) %>%
+    unique()
+}
+
+resolve_mleap_path <- function(version = NULL) {
+  if (length(getOption("mleap.home")) && is.null(version))
+    return(getOption("mleap.home"))
+  
+  installed_versions <- mleap_installed_versions()
+  if (nrow(installed_versions) == 0)
+    stop("Can't find MLeap Runtime jars. Specify options(mleap.home = ...) or run install_mleap().")
+  
+  version <- version %||% (installed_versions$mleap %>%
+                             purrr::map(~ numeric_version(.x)) %>%
+                             purrr::reduce(~ (if (.x > .y) .x else .y)) %>%
+                             as.character())
+  version_index <- which(version == installed_versions$mleap)[[1]]
+  if (!length(version_index))
+    stop("MLeap version ", version, " not found.")
+  
+  mleap_dir <- installed_versions$dir[[version_index]]
+  
   runtime_jars <- list.files(mleap_dir, full.names = TRUE, recursive = TRUE) %>%
     grep("mleap-runtime", ., value = TRUE)
   
   if (!length(runtime_jars))
-    stop("Can't find MLeap. Specify options(mleap.home = ...) or run install_mleap().")
+    stop("Can't find MLeap Runtime jars. Specify options(mleap.home = ...) or run install_mleap().")
   
-  versions <- purrr::map(
-    runtime_jars, 
-    ~ .x %>% 
-      strsplit("-") %>%
-      unlist() %>%
-      utils::tail(1) %>%
-      gsub("\\.jar$", "", .) %>%
-      numeric_version()
-  )
-  
-  latest_version <- versions %>%
-    purrr::reduce(~ (if (.x > .y) .x else .y)) 
-  latest_index <- versions %>%
-    purrr::map(~ .x == latest_version) %>%
-    which.max()
-  
-  dirname(runtime_jars[[latest_index]])
+  mleap_dir
 }
 
-mleap_found <- function() {
-  if (length(purrr::safely(resolve_mleap_path)()$result)) TRUE else FALSE
+mleap_found <- function(version = NULL) {
+  if (length(purrr::safely(resolve_mleap_path)(version)$result)) TRUE else FALSE
 }
 
 #' Install MLeap runtime
@@ -138,30 +158,41 @@ mleap_found <- function() {
 #' }
 #' @export
 install_mleap <- function(dir = NULL, version = NULL) {
+  version <- version %||% .globals$default_mleap_version
   
-  if (mleap_found()) {
-    message("MLeap already installed.")
+  if (mleap_found(version)) {
+    message("MLeap Runtime version ", version, " already installed.")
     return(invisible(NULL))
   }
   
   mvn <- resolve_maven_path()
   if (!length(mvn)) stop("MLeap installation failed. Maven must be installed.")
   
-  version <- version %||% .globals$default_mleap_version
-  mleap_dir <- dir %||% install_dir(paste0("mleap/mleap-", version))
+  mleap_dir <- if (!is.null(dir)) {
+    normalizePath(
+      file.path(dir, paste0("mleap-", version)), 
+      mustWork = FALSE
+      )
+  } else {
+    install_dir(paste0("mleap/mleap-", version))
+  }
+  
   if (!fs::dir_exists(mleap_dir))
     fs::dir_create(mleap_dir, recursive = TRUE)
   
-  message("Downloading MLeap...")
-  download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir)
-  download_jars(mvn, paste0("ml.combust.mleap:mleap-spark_2.11:", version), mleap_dir)
-  .globals$mleap_dir <- mleap_dir
+  message("Downloading MLeap Runtime ", version, "...")
   
-  rJava::.jpackage("mleap",
-                   morePaths = list.files(resolve_mleap_path(),
-                                          full.names = TRUE))
+  tryCatch(
+    download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir),
+    error = function(e) {fs::dir_delete(mleap_dir); stop(e)}
+  )
   
-  message("MLeap installation succeeded.")
+  # download_jars(mvn, paste0("ml.combust.mleap:mleap-spark_2.11:", version), mleap_dir)
+  .globals$mleap_dir <- dirname(mleap_dir)
+  
+  load_mleap_jars(version)
+  
+  message("MLeap Runtime version ", version, " installation succeeded.")
   invisible(NULL)
 }
 
@@ -175,18 +206,21 @@ download_jars <- function(mvn, dependency, install_dir) {
   
   repo <- getOption("maven.repo", .globals$default_maven_repo)
   
-  run_get_pom <- system2(
+  args_get_pom <- list(
     mvn, 
     c("dependency:get", 
-           paste0("-Dartifact=", dependency, ":pom"), 
-           paste0("-Ddest=", temp_dir),
-           paste0("-DremoteRepositories=", repo)
-           ),
-    stdout = FALSE
+      paste0("-Dartifact=", dependency, ":pom"), 
+      paste0("-Ddest=", temp_dir),
+      paste0("-DremoteRepositories=", repo)
+    )
   )
   
-  if (!identical(run_get_pom, 0L))
+  result_get_pom <- execute_command(args_get_pom)
+  
+  if (!command_success(result_get_pom))
     stop(paste0("Installation failed. Can't download pom for ", dependency),
+         "\n",
+         paste0(result_get_pom, collapse = "\n"),
          call. = FALSE
     )
   
@@ -194,32 +228,35 @@ download_jars <- function(mvn, dependency, install_dir) {
     temp_dir, paste0(artifact_version[[1]], "-", artifact_version[[2]], ".pom")
   )
   # package_java_dir <-  file.path(package_path, "java/")
-  run_get_artifact <- system2(
+  
+  args_get_artifact <- list(
     mvn,
     c("dependency:get",
       paste0("-Dartifact=", dependency),
       paste0(" -Ddest=", install_dir),
       paste0("-DremoteRepositories=", repo)
-    ),
-    stdout = FALSE
+    )
   )
+  result_get_artifact <- execute_command(args_get_artifact)
   
-  if (!identical(run_get_artifact, 0L))
+  if (!command_success(result_get_artifact))
     stop(paste0("Installation failed. Can't download dependencies for ", dependency),
+         "\n",
+         paste0(result_get_artifact, collapse = "\n"),
          call. = FALSE
     )
   
-  run_get_deps <- system2(
+  args_get_deps <- list(
     mvn,
     c("dependency:copy-dependencies",
       "-f", 
       pom_path,
       paste0("-DoutputDirectory=", install_dir)
-    ),
-    stdout = FALSE
+    )
   )
+  result_get_deps <- execute_command(args_get_deps)
   
-  if (!identical(run_get_deps, 0L))
+  if (!command_success(result_get_deps))
     stop(paste0("Installation failed. Can't copy dependencies for ", dependency),
          call. = FALSE
     )
@@ -235,4 +272,27 @@ get_maven_download_link <- function(version) {
     get_preferred_apache_mirror(),
     sprintf("maven/maven-3/%s/binaries/apache-maven-%s-bin.tar.gz", version, version)
   )
+}
+
+execute_command <- function(args) {
+  if (identical(.Platform$OS.type, "windows")) {
+    result <- shell(paste0(unlist(args), collapse = " "),
+                    ignore.stdout = TRUE
+    )
+    if (identical(result, 0L)) attr(result, "status") <- 0L
+  } else {
+    result <- do.call(system2, c(args, stdout = TRUE, stderr = TRUE))
+    if (is.null(attr(result, "status"))) attr(result, "status") <- 0L
+  }
+  result
+}
+
+command_success <- function(result) {
+  identical(attr(result, "status"), 0L)
+}
+
+load_mleap_jars <- function(version = NULL) {
+  rJava::.jpackage("mleap",
+                   morePaths = list.files(resolve_mleap_path(version),
+                                          full.names = TRUE))
 }

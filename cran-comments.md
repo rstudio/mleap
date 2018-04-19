@@ -2,8 +2,8 @@
 
 This is a resubmission. Changes:
 
-- Add SystemRequirements to DESCRIPTION.
-- Fix failing test by using sha256 checksum instead of md5, which is no longer available from Apache, for checking Maven download.
+- Refactored installation logic to work more consistently on Windows.
+- Enable installation tests on CRAN.
 
 ## Test environments
 * local OS X install, R 3.4.4

@@ -69,9 +69,11 @@ retrieve_model_schema <- function(jobj) {
 #'
 #' @export
 mleap_load_bundle <- function(path) {
-  if (!mleap_found())
-    stop("Can't find MLeap jars. Please set options(mleap.home = ...) or run install_mleap().",
-         call. = FALSE)
+  # if mleap runtime jars aren't in class path (from package load),
+  #   load jars
+  if (!any(grepl("mleap-runtime", rJava::.jclassPath())))
+    load_mleap_jars()
+  
   ctx_builder <- rJava::.jnew("ml.combust.mleap.runtime.javadsl.ContextBuilder")
   ctx <- ctx_builder$createMleapContext()
   bundle_file <- rJava::.jnew("java.io.File", path)
