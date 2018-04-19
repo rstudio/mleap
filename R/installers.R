@@ -152,9 +152,9 @@ install_mleap <- function(dir = NULL, version = NULL) {
   if (!fs::dir_exists(mleap_dir))
     fs::dir_create(mleap_dir, recursive = TRUE)
   
-  message("Downloading MLeap...")
+  message("Downloading MLeap Runtime ", version, "...")
   download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir)
-  download_jars(mvn, paste0("ml.combust.mleap:mleap-spark_2.11:", version), mleap_dir)
+  # download_jars(mvn, paste0("ml.combust.mleap:mleap-spark_2.11:", version), mleap_dir)
   .globals$mleap_dir <- mleap_dir
   
   rJava::.jpackage("mleap",
