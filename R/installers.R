@@ -143,7 +143,7 @@ resolve_mleap_path <- function(version = NULL) {
   mleap_dir
 }
 
-mleap_found <- function(version) {
+mleap_found <- function(version = NULL) {
   if (length(purrr::safely(resolve_mleap_path)(version)$result)) TRUE else FALSE
 }
 
@@ -192,7 +192,7 @@ install_mleap <- function(dir = NULL, version = NULL) {
   
   load_mleap_jars(version)
   
-  message("MLeap installation succeeded.")
+  message("MLeap Runtime version ", version, " installation succeeded.")
   invisible(NULL)
 }
 
