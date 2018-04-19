@@ -99,35 +99,52 @@ install_maven <- function(dir = NULL, version = NULL) {
   invisible(NULL)
 }
 
-resolve_mleap_path <- function() {
-  mleap_dir <- getOption("mleap.home", .globals$mleap_dir) %||% install_dir("mleap")
+#' Find existing MLeap installations
+#' 
+#' @return A data frame of MLeap Runtime installation versions and
+#'   their locations.
+#' 
+#' @export
+mleap_installed_versions <- function() {
+  mleap_dir <- .globals$mleap_dir %||% install_dir("mleap")
+  dirs <- c(getOption("mleap.home"), list.files(mleap_dir, full.names = TRUE))
+  versions <- dirs %>%
+    purrr::map_chr(~ gsub("mleap-", "", basename(.x)))
+  
+  data.frame(mleap = versions, dir = dirs,
+             stringsAsFactors = FALSE) %>%
+    unique()
+}
+
+resolve_mleap_path <- function(version = NULL) {
+  if (length(getOption("mleap.home")) && is.null(version))
+    return(getOption("mleap.home"))
+  
+  installed_versions <- mleap_installed_versions()
+  if (nrow(installed_versions) == 0)
+    stop("Can't find MLeap Runtime jars. Specify options(mleap.home = ...) or run install_mleap().")
+  
+  version <- version %||% (installed_versions$mleap %>%
+                             purrr::map(~ numeric_version(.x)) %>%
+                             purrr::reduce(~ (if (.x > .y) .x else .y)) %>%
+                             as.character())
+  version_index <- which(version == installed_versions$mleap)[[1]]
+  if (!length(version_index))
+    stop("MLeap version ", version, " not found.")
+  
+  mleap_dir <- installed_versions$dir[[version_index]]
+  
   runtime_jars <- list.files(mleap_dir, full.names = TRUE, recursive = TRUE) %>%
     grep("mleap-runtime", ., value = TRUE)
   
   if (!length(runtime_jars))
-    stop("Can't find MLeap. Specify options(mleap.home = ...) or run install_mleap().")
+    stop("Can't find MLeap Runtime jars. Specify options(mleap.home = ...) or run install_mleap().")
   
-  versions <- purrr::map(
-    runtime_jars, 
-    ~ .x %>% 
-      strsplit("-") %>%
-      unlist() %>%
-      utils::tail(1) %>%
-      gsub("\\.jar$", "", .) %>%
-      numeric_version()
-  )
-  
-  latest_version <- versions %>%
-    purrr::reduce(~ (if (.x > .y) .x else .y)) 
-  latest_index <- versions %>%
-    purrr::map(~ .x == latest_version) %>%
-    which.max()
-  
-  dirname(runtime_jars[[latest_index]])
+  mleap_dir
 }
 
-mleap_found <- function() {
-  if (length(purrr::safely(resolve_mleap_path)()$result)) TRUE else FALSE
+mleap_found <- function(version) {
+  if (length(purrr::safely(resolve_mleap_path)(version)$result)) TRUE else FALSE
 }
 
 #' Install MLeap runtime
@@ -141,28 +158,39 @@ mleap_found <- function() {
 #' }
 #' @export
 install_mleap <- function(dir = NULL, version = NULL) {
+  version <- version %||% .globals$default_mleap_version
   
-  if (mleap_found()) {
-    message("MLeap already installed.")
+  if (mleap_found(version)) {
+    message("MLeap Runtime version ", version, " already installed.")
     return(invisible(NULL))
   }
   
   mvn <- resolve_maven_path()
   if (!length(mvn)) stop("MLeap installation failed. Maven must be installed.")
   
-  version <- version %||% .globals$default_mleap_version
-  mleap_dir <- dir %||% install_dir(paste0("mleap/mleap-", version))
+  mleap_dir <- if (!is.null(dir)) {
+    normalizePath(
+      file.path(dir, paste0("mleap-", version)), 
+      mustWork = FALSE
+      )
+  } else {
+    install_dir(paste0("mleap/mleap-", version))
+  }
+  
   if (!fs::dir_exists(mleap_dir))
     fs::dir_create(mleap_dir, recursive = TRUE)
   
   message("Downloading MLeap Runtime ", version, "...")
-  download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir)
-  # download_jars(mvn, paste0("ml.combust.mleap:mleap-spark_2.11:", version), mleap_dir)
-  .globals$mleap_dir <- mleap_dir
   
-  rJava::.jpackage("mleap",
-                   morePaths = list.files(resolve_mleap_path(),
-                                          full.names = TRUE))
+  tryCatch(
+    download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir),
+    error = function(e) {fs::dir_delete(mleap_dir); stop(e)}
+  )
+  
+  # download_jars(mvn, paste0("ml.combust.mleap:mleap-spark_2.11:", version), mleap_dir)
+  .globals$mleap_dir <- dirname(mleap_dir)
+  
+  load_mleap_jars(version)
   
   message("MLeap installation succeeded.")
   invisible(NULL)
@@ -249,7 +277,7 @@ get_maven_download_link <- function(version) {
 execute_command <- function(args) {
   if (identical(.Platform$OS.type, "windows")) {
     result <- shell(paste0(unlist(args), collapse = " "),
-          ignore.stdout = TRUE
+                    ignore.stdout = TRUE
     )
     if (identical(result, 0L)) attr(result, "status") <- 0L
   } else {
@@ -261,4 +289,10 @@ execute_command <- function(args) {
 
 command_success <- function(result) {
   identical(attr(result, "status"), 0L)
+}
+
+load_mleap_jars <- function(version = NULL) {
+  rJava::.jpackage("mleap",
+                   morePaths = list.files(resolve_mleap_path(version),
+                                          full.names = TRUE))
 }
