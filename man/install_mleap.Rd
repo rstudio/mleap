@@ -4,12 +4,16 @@
 \alias{install_mleap}
 \title{Install MLeap runtime}
 \usage{
-install_mleap(dir = NULL, version = NULL)
+install_mleap(dir = NULL, version = NULL, use_temp_cache = TRUE)
 }
 \arguments{
 \item{dir}{(Optional) Directory to save the jars}
 
 \item{version}{Version of MLeap to install, defaults to the latest version tested with this package.}
+
+\item{use_temp_cache}{Whether to use a temporary Maven cache directory for downloading.
+Setting this to \code{TRUE} prevents Maven from creating a persistent \code{.m2/} directory.
+Defaults to \code{TRUE}.}
 }
 \description{
 Install MLeap runtime
