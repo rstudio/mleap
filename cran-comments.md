@@ -2,8 +2,8 @@
 
 This is a resubmission. Changes:
 
-- Refactored installation logic to work more consistently on Windows.
-- Enable installation tests on CRAN.
+- `install_mleap()` now instructs Maven to use a temporary directory to cache download files, so that no persistent folders are created in the user's home directory as a side effect.
+- Remove logic from unit tests to remove Ivy and Maven cache directories.
 
 ## Test environments
 * local OS X install, R 3.4.4
