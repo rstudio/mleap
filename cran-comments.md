@@ -2,8 +2,7 @@
 
 This is a resubmission. Changes:
 
-- `install_mleap()` now instructs Maven to use a temporary directory to cache download files, so that no persistent folders are created in the user's home directory as a side effect.
-- Remove logic from unit tests to remove Ivy and Maven cache directories.
+- Skip installation tests on CRAN.
 
 ## Test environments
 * local OS X install, R 3.4.4
