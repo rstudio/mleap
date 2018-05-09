@@ -19,7 +19,7 @@ mleap_transform <- function(model, data) {
     columns, types, ~ list(name = .x, type = .y))
     )
   rows <- data %>%
-    apply(1, as.list) %>%
+    purrr::transpose() %>%
     purrr::map(unname)
   
   data_json <- list(schema = schema, rows = rows) %>%
