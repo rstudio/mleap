@@ -1,9 +1,13 @@
 #!/usr/bin/env Rscript
 library(purrr)
+mleap:::download_jars(mleap:::resolve_maven_path(),
+                      "ml.combust.mleap:mleap-spark_2.11:0.9.6",
+                      normalizePath("internal/mleap-spark")
+                      )
+
 spec <- sparklyr::spark_default_compilation_spec() %>%
   map(function(x) {
-    x$jar_dep <- list.files(mleap:::resolve_mleap_path(), full.names = TRUE) %>% 
-      grep("(mleap|scala|bundle).+jar$", ., value = TRUE) %>%
+    x$jar_dep <- list.files("internal/mleap-spark", full.names = TRUE) %>% 
       map_chr(normalizePath)
     x
   }) %>%
