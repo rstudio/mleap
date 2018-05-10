@@ -5,3 +5,5 @@
 internal
 logs
 derby.log
+.DS_Store
+spark-warehouse

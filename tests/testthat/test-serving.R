@@ -15,23 +15,23 @@ test_that("We can export and use pipeline model", {
   # export model
   model_path <- file.path(tempdir(), "mtcars_model.zip")
   expect_message(ml_write_bundle(pipeline_model, 
-                 ml_transform(pipeline_model, mtcars_tbl),
-                 model_path,
-                 overwrite = TRUE),
+                                 ml_transform(pipeline_model, mtcars_tbl),
+                                 model_path,
+                                 overwrite = TRUE),
                  "Model successfully exported"
   )
   
   # error message when file exists
   expect_error(ml_write_bundle(pipeline_model, 
-                                 ml_transform(pipeline_model, mtcars_tbl),
-                                 model_path,
-                                 overwrite = FALSE),
-                 "*already exists\\.$"
+                               ml_transform(pipeline_model, mtcars_tbl),
+                               model_path,
+                               overwrite = FALSE),
+               "*already exists\\.$"
   )
   
   # load model
   model <- mleap_load_bundle(model_path)
-
+  
   # check model schema
   expect_known_output(
     mleap_model_schema(model),
@@ -50,7 +50,7 @@ test_that("We can export and use pipeline model", {
   expect_identical(dim(transformed_df), c(2L, 6L))
   expect_identical(colnames(transformed_df),
                    c("qsec", "hp", "wt", "big_hp", "features", "prediction")
-                   )
+  )
 })
 
 test_that("We can export a list of transformers", {
@@ -79,7 +79,7 @@ test_that("We can export a list of transformers", {
   
   # load model
   model <- mleap_load_bundle(model_path)
-
+  
   expect_known_output(
     mleap_model_schema(model),
     output_file("iris_model_schema.txt"),
@@ -91,9 +91,9 @@ test_that("We can export a list of transformers", {
     1.4,          0.2,
     5.2,          1.8
   )
-
+  
   transformed_df <- mleap_transform(model, newdata)
-
+  
   expect_identical(dim(transformed_df), c(2L, 7L))
   expect_identical(colnames(transformed_df),
                    c("Petal_Width", "Petal_Length", "features",
@@ -102,5 +102,53 @@ test_that("We can export a list of transformers", {
   )
   expect_identical(transformed_df$predicted_label,
                    c("setosa", "virginica"))
+  
+})
 
+test_that("mleap_transform() handles heterogenous predictors", {
+  skip_on_cran()
+  sc <- testthat_spark_connection()
+  
+  diamonds_tbl <- sdf_copy_to(sc, ggplot2::diamonds) %>%
+    dplyr::mutate(price = as.numeric(price))
+  
+  pipeline <- ml_pipeline(sc) %>%
+    ft_string_indexer("cut", "cut_cat") %>%
+    ft_string_indexer("color", "color_cat") %>%
+    ft_string_indexer("clarity", "clarity_cat") %>%
+    ft_vector_assembler(
+      c("carat", "cut_cat", "color_cat", "clarity_cat",
+        "depth", "table", "x", "y", "z"),
+      "features"
+    ) %>%
+    ml_gbt_regressor(label_col = "price", seed = 42)
+  
+  pipeline_model <- pipeline %>%
+    ml_fit(diamonds_tbl)
+  
+  model_path <- file.path(tempdir(), "diamonds_model.zip")
+  ml_write_bundle(
+    pipeline_model,
+    ml_transform(pipeline_model, diamonds_tbl),
+    model_path)
+  
+  mleap_model <- mleap_load_bundle(model_path)
+  
+  pred_data <- data.frame(
+    carat = 0.65, cut = "Good", color = "E",
+    clarity = "VS1", depth = 60, table = 60,
+    x = 4.5, y = 4.6, z = 2.7,
+    stringsAsFactors = FALSE
+  )
+  pred_data_tbl <- sdf_copy_to(sc, pred_data)
+  
+  prediction_mleap <- mleap_transform(mleap_model, pred_data) %>%
+    dplyr::pull(prediction)
+  prediction_spark <- ml_transform(
+    pipeline_model, 
+    pred_data_tbl) %>%
+    dplyr::pull(prediction)
+  
+  expect_equal(prediction_mleap, prediction_spark)
+  
 })

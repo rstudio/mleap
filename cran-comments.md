@@ -2,8 +2,7 @@
 
 This is a resubmission. Changes:
 
-- Refactored installation logic to work more consistently on Windows.
-- Enable installation tests on CRAN.
+- Skip installation tests on CRAN.
 
 ## Test environments
 * local OS X install, R 3.4.4

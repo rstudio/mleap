@@ -151,13 +151,16 @@ mleap_found <- function(version = NULL) {
 #' 
 #' @param dir (Optional) Directory to save the jars
 #' @param version Version of MLeap to install, defaults to the latest version tested with this package.
+#' @param use_temp_cache Whether to use a temporary Maven cache directory for downloading.
+#'   Setting this to \code{TRUE} prevents Maven from creating a persistent \code{.m2/} directory.
+#'   Defaults to \code{TRUE}.
 #' 
 #' @examples 
 #' \dontrun{
 #' install_mleap()
 #' }
 #' @export
-install_mleap <- function(dir = NULL, version = NULL) {
+install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
   version <- version %||% .globals$default_mleap_version
   
   if (mleap_found(version)) {
@@ -172,7 +175,7 @@ install_mleap <- function(dir = NULL, version = NULL) {
     normalizePath(
       file.path(dir, paste0("mleap-", version)), 
       mustWork = FALSE
-      )
+    )
   } else {
     install_dir(paste0("mleap/mleap-", version))
   }
@@ -183,7 +186,8 @@ install_mleap <- function(dir = NULL, version = NULL) {
   message("Downloading MLeap Runtime ", version, "...")
   
   tryCatch(
-    download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir),
+    download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir,
+                  use_temp_cache = use_temp_cache),
     error = function(e) {fs::dir_delete(mleap_dir); stop(e)}
   )
   
@@ -196,8 +200,14 @@ install_mleap <- function(dir = NULL, version = NULL) {
   invisible(NULL)
 }
 
-download_jars <- function(mvn, dependency, install_dir) {
+download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
   temp_dir <- tempdir()
+  
+  maven_local_repo <- if (use_temp_cache) {
+    temp_repo <- paste0(temp_dir, "/local_repo")
+    fs::dir_create(temp_repo)
+    temp_repo
+  }
   
   artifact_version <- dependency %>%
     strsplit(":") %>%
@@ -215,7 +225,7 @@ download_jars <- function(mvn, dependency, install_dir) {
     )
   )
   
-  result_get_pom <- execute_command(args_get_pom)
+  result_get_pom <- execute_command(args_get_pom, maven_local_repo)
   
   if (!command_success(result_get_pom))
     stop(paste0("Installation failed. Can't download pom for ", dependency),
@@ -237,7 +247,7 @@ download_jars <- function(mvn, dependency, install_dir) {
       paste0("-DremoteRepositories=", repo)
     )
   )
-  result_get_artifact <- execute_command(args_get_artifact)
+  result_get_artifact <- execute_command(args_get_artifact, maven_local_repo)
   
   if (!command_success(result_get_artifact))
     stop(paste0("Installation failed. Can't download dependencies for ", dependency),
@@ -254,7 +264,7 @@ download_jars <- function(mvn, dependency, install_dir) {
       paste0("-DoutputDirectory=", install_dir)
     )
   )
-  result_get_deps <- execute_command(args_get_deps)
+  result_get_deps <- execute_command(args_get_deps, maven_local_repo)
   
   if (!command_success(result_get_deps))
     stop(paste0("Installation failed. Can't copy dependencies for ", dependency),
@@ -274,7 +284,14 @@ get_maven_download_link <- function(version) {
   )
 }
 
-execute_command <- function(args) {
+execute_command <- function(args, maven_local_repo) {
+  
+  if (!is.null(maven_local_repo)) {
+    args[[2]] <- c(args[[2]],
+              paste0("-Dmaven.repo.local=", maven_local_repo)
+    )
+  }
+  
   if (identical(.Platform$OS.type, "windows")) {
     result <- shell(paste0(unlist(args), collapse = " "),
                     ignore.stdout = TRUE
