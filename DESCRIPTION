@@ -29,4 +29,5 @@ RoxygenNote: 6.0.1
 Suggests: 
     testthat,
     covr,
-    ggplot2
+    ggplot2,
+    dplyr
