@@ -17,7 +17,7 @@ mleap_transform <- function(model, data) {
   
   schema <- list(fields = purrr::map2(
     columns, types, ~ list(name = .x, type = .y))
-    )
+  )
   rows <- data %>%
     purrr::transpose() %>%
     purrr::map(unname)
@@ -25,16 +25,24 @@ mleap_transform <- function(model, data) {
   data_json <- list(schema = schema, rows = rows) %>%
     jsonlite::toJSON(auto_unbox = TRUE)
   
-  data_bytes <- rJava::J("scala.io.Source")$fromString(as.character(data_json)) %>%
+  data_bytes <- rJava::.jnew("scala.io.Source$") %>%
+    rJava::.jcall("Lscala/io/Source;", "fromString", as.character(data_json)) %>%
     rJava::.jcall("S", "mkString", evalString = FALSE) %>%
     rJava::.jcall("[B", "getBytes", evalArray= FALSE)
   
-  frame_reader <- rJava::J("ml.combust.mleap.runtime.serialization.FrameReader$")
-  frame_reader <- frame_reader$`MODULE$`$apply(
-    "ml.combust.mleap.json", 
-    frame_reader$`MODULE$`$`apply$default$2`()
-  )
-  frame <- frame_reader$fromBytes(data_bytes, frame_reader$`fromBytes$default$2`())
+  frame_reader <- rJava::.jnew("ml.combust.mleap.runtime.serialization.FrameReader$")
+  frame_reader <- frame_reader %>%
+    rJava::.jcall("Lml/combust/mleap/runtime/serialization/FrameReader;", "apply",
+                  rJava::.jcall(frame_reader, "S", "apply$default$1"),
+                  rJava::.jcall(frame_reader, "Lscala/Option;", "apply$default$2")
+    )
+  
+  frame <- frame_reader %>%
+    rJava::.jcall(
+      "Lscala/util/Try;", "fromBytes",
+      data_bytes,
+      rJava::.jcall("java.nio.charset.Charset", "Ljava/nio/charset/Charset;", "forName", "UTF-8")
+    )
   model <- model$.jobj$root()
   output_frame <- model$transform(frame$get())$get()
   
