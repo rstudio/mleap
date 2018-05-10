@@ -75,10 +75,17 @@ mleap_load_bundle <- function(path) {
     load_mleap_jars()
   
   ctx_builder <- rJava::.jnew("ml.combust.mleap.runtime.javadsl.ContextBuilder")
-  ctx <- ctx_builder$createMleapContext()
+  ctx <- rJava::.jcall(
+    ctx_builder, "Lml/combust/mleap/runtime/MleapContext;", 
+    "createMleapContext"
+    )
   bundle_file <- rJava::.jnew("java.io.File", path)
   bundle_builder <- rJava::.jnew("ml.combust.mleap.runtime.javadsl.BundleBuilder")
-  transformer <- bundle_builder$load(bundle_file, ctx)
+  transformer <- rJava::.jcall(
+    bundle_builder,
+    "Lml/combust/bundle/dsl/Bundle;",
+    "load", bundle_file, ctx
+    )
   new_mleap_transformer(transformer)
 }
 
