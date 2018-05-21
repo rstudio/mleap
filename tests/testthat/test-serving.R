@@ -92,7 +92,15 @@ test_that("We can export a list of transformers", {
     5.2,          1.8
   )
   
+  newdata_tbl <- sdf_copy_to(sc, newdata, overwrite = TRUE)
+  
   transformed_df <- mleap_transform(model, newdata)
+  predictions_mleap <- transformed_df %>%
+    dplyr::pull(predicted_label)
+  
+  predictions_spark <- ml_transform(
+    pipeline_model, newdata_tbl) %>%
+    dplyr::pull(predicted_label)
   
   expect_identical(dim(transformed_df), c(2L, 7L))
   expect_identical(colnames(transformed_df),
@@ -100,8 +108,7 @@ test_that("We can export a list of transformers", {
                      "rawPrediction", "probability", "prediction",
                      "predicted_label")
   )
-  expect_identical(transformed_df$predicted_label,
-                   c("setosa", "virginica"))
+  expect_identical(predictions_mleap, predictions_spark)
   
 })
 

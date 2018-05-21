@@ -39,7 +39,7 @@ We can now export Spark ML pipelines from sparklyr.
 
 ``` r
 library(sparklyr)
-sc <- spark_connect(master = "local", version = "2.2.0")
+sc <- spark_connect(master = "local", version = "2.3.0")
 mtcars_tbl <- sdf_copy_to(sc, mtcars, overwrite = TRUE)
 
 # Create a pipeline and fit it
@@ -75,10 +75,10 @@ model
 ```
 
     ## MLeap Transformer
-    ## <a41de64b-ab29-4a72-aca6-8563046a2b14> 
-    ##   Name: pipeline_3ca07eafd45a 
+    ## <01e80bb7-3eb9-4471-b0a5-7777aeb937fa> 
+    ##   Name: pipeline_77cbb70dbf00 
     ##   Format: json 
-    ##   MLeap Version: 0.10.0-SNAPSHOT
+    ##   MLeap Version: 0.10.1
 
 We can retrieve the schema associated with the model:
 
@@ -118,4 +118,4 @@ dplyr::glimpse(transformed_df)
     ## $ wt         <dbl> 2.68, 3.08
     ## $ big_hp     <dbl> 1, 0
     ## $ features   <list> [[[1, 2.68, 16.2], [3]], [[0, 3.08, 18.1], [3]]]
-    ## $ prediction <dbl> 21.06529, 22.36667
+    ## $ prediction <dbl> 21.00084, 20.56445
