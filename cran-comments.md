@@ -1,6 +1,6 @@
-## CRAN check results
+## Package dependencies for unit tests
 
-Note that the errors at [https://cran.r-project.org/web/checks/check_results_mleap.html](https://cran.r-project.org/web/checks/check_results_mleap.html) seem to be intermittent and unrelated to this package.
+Dependencies for unit tests have been added to `Suggests`, per the request from the CRAN team.
 
 ## Test environments
 * local OS X install, R 3.5.0
