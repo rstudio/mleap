@@ -12,7 +12,7 @@ Description: A 'sparklyr' <https://spark.rstudio.com> extension that provides
 URL: https://github.com/rstudio/mleap
 BugReports: https://github.com/rstudio/mleap/issues
 License: Apache License (>= 2.0)
-SystemRequirements: Apache Spark 2.0-2.2, Apache Maven 3.5+, Java JDK 8, MLeap Runtime 0.9.6+
+SystemRequirements: Apache Spark 2.0+, Apache Maven 3.5+, Java JDK 8, MLeap Runtime 0.10.1+
 Encoding: UTF-8
 LazyData: true
 Depends:
