@@ -1,3 +1,7 @@
+# mleap 0.1.3 (unreleased)
+
+* Support MLeap 0.12.0.
+
 # mleap 0.1.2
 
 * Support MLeap 0.10.1 and Spark 2.3.0.
