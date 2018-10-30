@@ -83,7 +83,7 @@ install_maven <- function(dir = NULL, version = NULL) {
   
   if (!identical(digest::digest(file = normalizePath(maven_path),
                                 algo = "sha512"),
-                 readChar(checksum_url, nchars = 40)
+                 readChar(checksum_url, nchars = 128)
   )) {
     fs::file_delete(maven_path)
     stop("Maven installation failed. Unable to verify checksum.")
