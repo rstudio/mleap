@@ -1,4 +1,4 @@
-# mleap 0.1.3 (unreleased)
+# mleap 0.1.3
 
 * Support MLeap 0.12.0.
 

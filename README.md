@@ -5,6 +5,8 @@ R interface for MLeap
 status](https://travis-ci.org/rstudio/mleap.svg?branch=master)](https://travis-ci.org/rstudio/mleap)
 [![Coverage
 status](https://codecov.io/gh/rstudio/mleap/branch/master/graph/badge.svg)](https://codecov.io/github/rstudio/mleap?branch=master)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/mleap)](https://cran.r-project.org/package=mleap)
 
 **mleap** is a [sparklyr](http://spark.rstudio.com/) extension that
 provides an interface to [MLeap](https://github.com/combust/mleap),
@@ -75,10 +77,10 @@ model
 ```
 
     ## MLeap Transformer
-    ## <01e80bb7-3eb9-4471-b0a5-7777aeb937fa> 
-    ##   Name: pipeline_77cbb70dbf00 
+    ## <97ff1e90-5c3e-40fc-99dd-1919276e76be> 
+    ##   Name: pipeline_1b49362281ef 
     ##   Format: json 
-    ##   MLeap Version: 0.10.1
+    ##   MLeap Version: 0.12.0
 
 We can retrieve the schema associated with the model:
 
