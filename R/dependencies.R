@@ -1,4 +1,10 @@
 spark_dependencies <- function(spark_version, scala_version, ...) {
+  mleap_version <- if (spark_version >= "2.3.0") {
+    "0.12.0"
+  } else {
+    "0.11.0"
+  }
+  
   sparklyr::spark_dependency(
     jars = c(
       system.file(
@@ -7,7 +13,7 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
       )
     ),
     packages = c(
-      sprintf("ml.combust.mleap:mleap-spark_%s:%s", scala_version, .globals$default_mleap_version)
+      sprintf("ml.combust.mleap:mleap-spark_%s:%s", scala_version, mleap_version)
     )
   )
 }
