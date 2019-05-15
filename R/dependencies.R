@@ -9,7 +9,8 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
     jars = c(
       system.file(
         sprintf("java/mleap-%s-%s.jar", spark_version, scala_version),
-        package = "mleap"
+        package = "mleap",
+        mustWork = TRUE
       )
     ),
     packages = c(
