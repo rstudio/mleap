@@ -1,10 +1,10 @@
-# A tibble: 7 x 4
-  name            type   nullable dimension
-  <chr>           <chr>  <lgl>    <chr>    
-1 Petal_Width     double TRUE     <NA>     
-2 Petal_Length    double TRUE     <NA>     
-3 predicted_label string TRUE     <NA>     
-4 features        double TRUE     (2)      
-5 prediction      double FALSE    <NA>     
-6 rawPrediction   double TRUE     (3)      
-7 probability     double TRUE     (3)      
+# A tibble: 7 x 5
+  name            type   nullable dimension io    
+  <chr>           <chr>  <lgl>    <chr>     <chr> 
+1 Petal_Width     double TRUE     <NA>      input 
+2 Petal_Length    double TRUE     <NA>      input 
+3 predicted_label string TRUE     <NA>      output
+4 features        double TRUE     (2)       output
+5 prediction      double FALSE    <NA>      output
+6 rawPrediction   double TRUE     (3)       output
+7 probability     double TRUE     (3)       output
