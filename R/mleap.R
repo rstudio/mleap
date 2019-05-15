@@ -36,30 +36,41 @@ mleap_model_schema <- function(x) {
 }
 
 retrieve_model_schema <- function(jobj) {
-  schema <- jobj$root()$schema()$fields()
+  input_schema <- jobj$root()$inputSchema()$fields()
+  output_schema <- jobj$root()$outputSchema()$fields()
   ct <- rJava::.jnew("scala.reflect.ClassTag$")
-  ct <- ct$`MODULE$`$apply(schema$head()$getClass())
+  ct <- ct$`MODULE$`$apply(input_schema$head()$getClass())
   
-  schema$toArray(ct) %>%
-    as.list() %>%
-    purrr::map(function(x) {
-      data_type <- x$dataType()
-      base_type <- data_type$base()$toString()
-      dimensions <- tryCatch(
-        data_type$dimensions()$get()$toIterable()$array() %>%
-          paste0("(", ., ")", collapse = ", "),
-        error = function(e) NA_character_
-      )
-      is_nullable <- data_type$isNullable()
-      list(x$name(),
-           base_type,
-           is_nullable,
-           dimensions)
+  get_schema_tbl <- function(schema, ct, io) {
+    df <- schema$toArray(ct) %>%
+      as.list() %>%
+      purrr::map(function(x) {
+        data_type <- x$dataType()
+        base_type <- data_type$base()$toString()
+        dimensions <- tryCatch(
+          data_type$dimensions()$get()$toIterable()$array() %>%
+            paste0("(", ., ")", collapse = ", "),
+          error = function(e) NA_character_
+        )
+        is_nullable <- data_type$isNullable()
+        list(x$name(),
+             base_type,
+             is_nullable,
+             dimensions)
       }) %>%
-    purrr::transpose() %>%
-    purrr::set_names(c("name", "type", "nullable", "dimension")) %>%
-    purrr::map(unlist) %>%
-    tibble::as_tibble()
+      purrr::transpose() %>%
+      purrr::set_names(c("name", "type", "nullable", "dimension")) %>%
+      purrr::map(unlist) %>%
+      tibble::as_tibble()
+    
+    df$io <- io
+    df
+  }
+  
+  rbind(
+    get_schema_tbl(input_schema, ct, "input"),
+    get_schema_tbl(output_schema, ct, "output")
+  )
 }
 
 #' Loads an MLeap bundle
@@ -79,6 +90,7 @@ mleap_load_bundle <- function(path) {
     ctx_builder, "Lml/combust/mleap/runtime/MleapContext;", 
     "createMleapContext"
     )
+  path <- normalizePath(path)
   bundle_file <- rJava::.jnew("java.io.File", path)
   bundle_builder <- rJava::.jnew("ml.combust.mleap.runtime.javadsl.BundleBuilder")
   transformer <- rJava::.jcall(

@@ -1,9 +1,9 @@
-# A tibble: 6 x 4
-  name       type   nullable dimension
-  <chr>      <chr>  <lgl>    <chr>    
-1 qsec       double TRUE     <NA>     
-2 hp         double FALSE    <NA>     
-3 wt         double TRUE     <NA>     
-4 big_hp     double FALSE    <NA>     
-5 features   double TRUE     (3)      
-6 prediction double FALSE    <NA>     
+# A tibble: 6 x 5
+  name       type   nullable dimension io    
+  <chr>      <chr>  <lgl>    <chr>     <chr> 
+1 qsec       double TRUE     <NA>      input 
+2 hp         double FALSE    <NA>      input 
+3 wt         double TRUE     <NA>      input 
+4 big_hp     double FALSE    <NA>      output
+5 features   double TRUE     (3)       output
+6 prediction double FALSE    <NA>      output
