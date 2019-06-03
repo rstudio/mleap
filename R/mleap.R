@@ -106,7 +106,7 @@ mleap_load_bundle <- function(path) {
 #' This functions serializes a Spark pipeline model into an MLeap bundle.
 #' 
 #' @param x A Spark pipeline model object.
-#' @param dataset A Spark DataFrame with the schema of the transformed DataFrame.
+#' @param sample_input A sample input Spark DataFrame with the expected schema.
 #' @param path Where to save the bundle.
 #' @param overwrite Whether to overwrite an existing file, defaults to \code{FALSE}.
 #' 
@@ -122,13 +122,13 @@ mleap_load_bundle <- function(path) {
 #' pipeline_model <- ml_fit(pipeline, mtcars_tbl)
 #' model_path <- file.path(tempdir(), "mtcars_model.zip")
 #' ml_write_bundle(pipeline_model, 
-#'                 ml_transform(pipeline_model, mtcars_tbl),
+#'                 mtcars_tbl,
 #'                 model_path,
 #'                 overwrite = TRUE)
 #' }
 #' 
 #' @export
-ml_write_bundle <- function(x, dataset, path, overwrite = FALSE) {
+ml_write_bundle <- function(x, sample_input, path, overwrite = FALSE) {
   stages <- if (purrr::is_bare_list(x)) {
     purrr::map(x, sparklyr::spark_jobj)
   } else {
@@ -136,7 +136,11 @@ ml_write_bundle <- function(x, dataset, path, overwrite = FALSE) {
   }
   
   sc <- sparklyr::spark_connection(stages[[1]])
-  sdf <- sparklyr::spark_dataframe(dataset)
+  
+  sdf <- x %>% 
+    sparklyr::ml_transform(sample_input) %>% 
+    sparklyr::spark_dataframe()
+  
   path <- resolve_path(path)
 
   if (fs::file_exists(path)) {
