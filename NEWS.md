@@ -1,5 +1,6 @@
-# mleap 0.1.3.9000
+# mleap 0.2.0
 
+* **Breaking change**: `ml_write_bundle()` now takes the `sample_input` instead of `dataset`.
 * Support MLeap 0.13.0
 
 # mleap 0.1.3
