@@ -142,6 +142,9 @@ ml_write_bundle <- function(x, sample_input, path, overwrite = FALSE) {
     sparklyr::spark_dataframe()
   
   path <- resolve_path(path)
+  
+  if (!identical(fs::path_ext(path), "zip"))
+    stop("The bundle path must have a `.zip` extension.", call. = FALSE)
 
   if (fs::file_exists(path)) {
     if (!overwrite) {
