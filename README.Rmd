@@ -52,13 +52,9 @@ pipeline <- ml_pipeline(sc) %>%
   ml_gbt_regressor(label_col = "mpg")
 pipeline_model <- ml_fit(pipeline, mtcars_tbl)
 
-# A transformed data frame with the appropriate schema is required
-#   for exporting the pipeline model
-transformed_tbl <- ml_transform(pipeline_model, mtcars_tbl)
-
 # Export model
 model_path <- file.path(tempdir(), "mtcars_model.zip")
-ml_write_bundle(pipeline_model, transformed_tbl, model_path)
+ml_write_bundle(pipeline_model, sample_input = mtcars_tbl, path = model_path)
 
 # Disconnect from Spark
 spark_disconnect(sc)

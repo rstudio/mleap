@@ -4,12 +4,12 @@
 \alias{ml_write_bundle}
 \title{Export a Spark pipeline for serving}
 \usage{
-ml_write_bundle(x, dataset, path, overwrite = FALSE)
+ml_write_bundle(x, sample_input, path, overwrite = FALSE)
 }
 \arguments{
 \item{x}{A Spark pipeline model object.}
 
-\item{dataset}{A Spark DataFrame with the schema of the transformed DataFrame.}
+\item{sample_input}{A sample input Spark DataFrame with the expected schema.}
 
 \item{path}{Where to save the bundle.}
 
@@ -30,7 +30,7 @@ pipeline <- ml_pipeline(sc) \%>\%
 pipeline_model <- ml_fit(pipeline, mtcars_tbl)
 model_path <- file.path(tempdir(), "mtcars_model.zip")
 ml_write_bundle(pipeline_model, 
-                ml_transform(pipeline_model, mtcars_tbl),
+                mtcars_tbl,
                 model_path,
                 overwrite = TRUE)
 }
