@@ -51,17 +51,15 @@ pipeline <- ml_pipeline(sc) %>%
   ml_gbt_regressor(label_col = "mpg")
 pipeline_model <- ml_fit(pipeline, mtcars_tbl)
 
-# A transformed data frame with the appropriate schema is required
-#   for exporting the pipeline model
-transformed_tbl <- ml_transform(pipeline_model, mtcars_tbl)
-
 # Export model
 model_path <- file.path(tempdir(), "mtcars_model.zip")
-ml_write_bundle(pipeline_model, transformed_tbl, model_path)
+ml_write_bundle(pipeline_model, sample_input = mtcars_tbl, path = model_path)
 
 # Disconnect from Spark
 spark_disconnect(sc)
 ```
+
+    ## NULL
 
 At this point, we can share `mtcars_model.zip` with our
 deployment/implementation engineers, and they would be able to embed the
@@ -77,10 +75,10 @@ model
 ```
 
     ## MLeap Transformer
-    ## <97ff1e90-5c3e-40fc-99dd-1919276e76be> 
-    ##   Name: pipeline_1b49362281ef 
+    ## <e1a50a0f-0f49-4df8-9098-c3e31d6c646a> 
+    ##   Name: pipeline_ece74f82b662 
     ##   Format: json 
-    ##   MLeap Version: 0.12.0
+    ##   MLeap Version: 0.13.0
 
 We can retrieve the schema associated with the model:
 
@@ -88,15 +86,15 @@ We can retrieve the schema associated with the model:
 mleap_model_schema(model)
 ```
 
-    ## # A tibble: 6 x 4
-    ##   name       type   nullable dimension
-    ##   <chr>      <chr>  <lgl>    <chr>    
-    ## 1 qsec       double TRUE     <NA>     
-    ## 2 hp         double FALSE    <NA>     
-    ## 3 wt         double TRUE     <NA>     
-    ## 4 big_hp     double FALSE    <NA>     
-    ## 5 features   double TRUE     (3)      
-    ## 6 prediction double FALSE    <NA>
+    ## # A tibble: 6 x 5
+    ##   name       type   nullable dimension io    
+    ##   <chr>      <chr>  <lgl>    <chr>     <chr> 
+    ## 1 qsec       double TRUE     <NA>      input 
+    ## 2 hp         double FALSE    <NA>      input 
+    ## 3 wt         double TRUE     <NA>      input 
+    ## 4 big_hp     double FALSE    <NA>      output
+    ## 5 features   double TRUE     (3)       output
+    ## 6 prediction double FALSE    <NA>      output
 
 Then, we create a new data frame to be scored, and make predictions
 using our model:
