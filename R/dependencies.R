@@ -1,5 +1,7 @@
 spark_dependencies <- function(spark_version, scala_version, ...) {
-  mleap_version <- if (spark_version >= "2.3.0") {
+  mleap_version <- if (spark_version >= "2.4.0") {
+    "0.14.0"
+  } else if (spark_version >= "2.3.0") {
     "0.13.0"
   } else {
     "0.11.0"
