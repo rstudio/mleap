@@ -1,3 +1,7 @@
+# mleap 0.2.9000
+
+- Support for Spark 2.4
+
 # mleap 0.2.0
 
 * **Breaking change**: `ml_write_bundle()` now takes the `sample_input` instead of `dataset`.
