@@ -16,6 +16,8 @@ mleap_transform <- function(model, data) {
   types <- columns %>%
     purrr::map_chr(~ input_schema$type[[match(.x, input_schema$name)]])
   
+  types <- gsub("^int$", "integer", types)
+  
   schema <- list(fields = purrr::map2(
     columns, types, ~ list(name = .x, type = .y))
   )
