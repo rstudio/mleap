@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 library(purrr)
 mleap:::download_jars(mleap:::resolve_maven_path(),
-                      "ml.combust.mleap:mleap-spark_2.11:0.14.0",
+                      "ml.combust.mleap:mleap-spark_2.11:0.16.0",
                       normalizePath("internal/mleap-spark"),
                       use_temp_cache = TRUE
                       )
