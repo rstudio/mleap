@@ -17,12 +17,12 @@ Encoding: UTF-8
 Depends:
   R (>= 3.1.2)
 Imports:
+  rJava,
   sparklyr,
   jsonlite,
   purrr,
   fs,
   tibble,
-  rJava,
   digest
 RoxygenNote: 6.1.1
 Suggests: 
