@@ -1,4 +1,4 @@
-# A tibble: 6 x 5
+# A tibble: 6 × 5
   name       type   nullable dimension io    
   <chr>      <chr>  <lgl>    <chr>     <chr> 
 1 qsec       double TRUE     <NA>      input 
