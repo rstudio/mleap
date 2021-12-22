@@ -181,7 +181,7 @@ install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
   }
   
   if (!fs::dir_exists(mleap_dir))
-    fs::dir_create(mleap_dir, recursive = TRUE)
+    fs::dir_create(mleap_dir, recurse = TRUE)
   
   message("Downloading MLeap Runtime ", version, "...")
   
