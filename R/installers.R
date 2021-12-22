@@ -149,7 +149,8 @@ mleap_found <- function(version = NULL) {
 #' Install MLeap runtime
 #' 
 #' @param dir (Optional) Directory to save the jars
-#' @param version Version of MLeap to install, defaults to the latest version tested with this package.
+#' @param mleap_version Version of MLeap to install, defaults to the latest version tested with this package.
+#' @param scala_version Version of Scala being used, defaults to version `2.11`.
 #' @param use_temp_cache Whether to use a temporary Maven cache directory for downloading.
 #'   Setting this to \code{TRUE} prevents Maven from creating a persistent \code{.m2/} directory.
 #'   Defaults to \code{TRUE}.
@@ -159,11 +160,11 @@ mleap_found <- function(version = NULL) {
 #' install_mleap()
 #' }
 #' @export
-install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
-  version <- version %||% .globals$default_mleap_version
+install_mleap <- function(dir = NULL, mleap_version = NULL, scala_version = "2.11", use_temp_cache = TRUE) {
+  mleap_version <- mleap_version %||% .globals$default_mleap_version
   
-  if (mleap_found(version)) {
-    message("MLeap Runtime version ", version, " already installed.")
+  if (mleap_found(mleap_version)) {
+    message("MLeap Runtime version ", mleap_version, " already installed.")
     return(invisible(NULL))
   }
   
@@ -172,20 +173,20 @@ install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
   
   mleap_dir <- if (!is.null(dir)) {
     normalizePath(
-      file.path(dir, paste0("mleap-", version)), 
+      file.path(dir, paste0("mleap-", mleap_version)), 
       mustWork = FALSE
     )
   } else {
-    install_dir(paste0("mleap/mleap-", version))
+    install_dir(paste0("mleap/mleap-", mleap_version))
   }
   
   if (!fs::dir_exists(mleap_dir))
     fs::dir_create(mleap_dir, recurse = TRUE)
   
-  message("Downloading MLeap Runtime ", version, "...")
+  message("Downloading MLeap Runtime ", mleap_version, "...")
   
   tryCatch(
-    download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir,
+    download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_", scala_version, ":", mleap_version), mleap_dir,
                   use_temp_cache = use_temp_cache),
     error = function(e) {fs::dir_delete(mleap_dir); stop(e)}
   )
@@ -193,9 +194,9 @@ install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
   # download_jars(mvn, paste0("ml.combust.mleap:mleap-spark_2.11:", version), mleap_dir)
   .globals$mleap_dir <- dirname(mleap_dir)
   
-  load_mleap_jars(version)
+  load_mleap_jars(mleap_version)
   
-  message("MLeap Runtime version ", version, " installation succeeded.")
+  message("MLeap Runtime version ", mleap_version, " installation succeeded.")
   invisible(NULL)
 }
 
