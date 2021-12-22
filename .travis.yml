@@ -7,6 +7,7 @@ cache: packages
 before_install:
   - sudo apt update >/dev/null 2>&1   
   - sudo apt install r-cran-rjava
+  - sudo R CMD javareconf
 
 after_success:
     - Rscript -e 'covr::codecov()'
