@@ -5,7 +5,8 @@ sudo: false
 cache: packages
 
 before_install:
-  - Rscript -e 'install.packages(c("rJava", "waldo", "covr", "ggplot2", "dplyr"))'
+  - sudo apt update >/dev/null 2>&1   
+  - sudo apt install r-cran-rjava
 
 after_success:
     - Rscript -e 'covr::codecov()'
