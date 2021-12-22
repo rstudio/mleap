@@ -6,7 +6,7 @@ maven_dir <- file.path(temp, "maven")
 mleap_dir <- file.path(temp, "mleap")
 
 testthat_spark_connection <- function() {
-  version <- Sys.getenv("SPARK_VERSION", unset = "3.1.2")
+  version <- Sys.getenv("SPARK_VERSION", unset = "3.0.2")
 
   spark_installed <- sparklyr::spark_installed_versions()
   if (nrow(spark_installed[spark_installed$spark == version, ]) == 0) {
