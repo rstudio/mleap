@@ -4,10 +4,11 @@ language: R
 sudo: false
 cache: packages
 
+apt_packages:
+  - r-cran-rjava
+
 before_install:
-  - sudo apt update >/dev/null 2>&1   
-  - sudo apt install r-cran-rjava
-  - sudo R CMD javareconf
+  - sudo $(which R) CMD javareconf
 
 after_success:
-    - Rscript -e 'covr::codecov()'
+  - Rscript -e 'covr::codecov()'
