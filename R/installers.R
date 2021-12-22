@@ -89,8 +89,7 @@ install_maven <- function(dir = NULL, version = NULL) {
     stop("Maven installation failed. Unable to verify checksum.")
   }
   
-  status <- utils::untar(maven_path, compressed = "gzip",
-                         exdir = maven_dir)
+  status <- utils::untar(maven_path, exdir = maven_dir)
   if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
   fs::file_delete(maven_path)
   
