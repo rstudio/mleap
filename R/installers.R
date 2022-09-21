@@ -1,43 +1,3 @@
-install_dir <- function(dir_name) {
-  dirs <- list(
-    unix = paste0("~/", dir_name),
-    windows = paste0("%LOCALAPPDATA%/", dir_name)
-  )
-  
-  resolve_envpath <- function(path_with_end) {
-    if (.Platform$OS.type == "windows") {
-      parts <- strsplit(path_with_end, "/")[[1]]
-      first <- gsub("%", "", parts[[1]])
-      if (nchar(Sys.getenv(first)) > 0) parts[[1]] <- Sys.getenv(first)
-      do.call("file.path", as.list(parts))
-    }
-    else {
-      normalizePath(path_with_end, mustWork = FALSE)
-    }
-  }
-  
-  getOption("maven.install.dir", resolve_envpath(dirs[[.Platform$OS.type]]))
-}
-
-resolve_maven_path <- function() {
-  maven_dir <- getOption("maven.home", .globals$maven_dir) %||% install_dir("maven")
-  maven_path <- list.files(maven_dir, full.names = TRUE, recursive = TRUE) %>%
-    grep("/bin/mvn$", ., value = TRUE) %>%
-    utils::head(1)
-  if (!length(maven_path))
-    stop("Can't find Maven. Specify options(maven.home = ...) or run install_maven().",
-         call. = FALSE)
-  
-  if (identical(.Platform$OS.type, "windows"))
-    maven_path <- paste0(maven_path, ".cmd")
-  
-  maven_path
-}
-
-maven_found <- function() {
-  if (length(purrr::safely(resolve_maven_path)()$result)) TRUE else FALSE
-}
-
 #' Install Maven
 #' 
 #' This function installs Apache Maven.
@@ -98,6 +58,48 @@ install_maven <- function(dir = NULL, version = NULL) {
   message("Maven installation succeeded.")
   invisible(NULL)
 }
+
+
+install_dir <- function(dir_name) {
+  dirs <- list(
+    unix = paste0("~/", dir_name),
+    windows = paste0("%LOCALAPPDATA%/", dir_name)
+  )
+  
+  resolve_envpath <- function(path_with_end) {
+    if (.Platform$OS.type == "windows") {
+      parts <- strsplit(path_with_end, "/")[[1]]
+      first <- gsub("%", "", parts[[1]])
+      if (nchar(Sys.getenv(first)) > 0) parts[[1]] <- Sys.getenv(first)
+      do.call("file.path", as.list(parts))
+    }
+    else {
+      normalizePath(path_with_end, mustWork = FALSE)
+    }
+  }
+  
+  getOption("maven.install.dir", resolve_envpath(dirs[[.Platform$OS.type]]))
+}
+
+resolve_maven_path <- function() {
+  maven_dir <- getOption("maven.home", .globals$maven_dir) %||% install_dir("maven")
+  maven_path <- list.files(maven_dir, full.names = TRUE, recursive = TRUE) %>%
+    grep("/bin/mvn$", ., value = TRUE) %>%
+    utils::head(1)
+  if (!length(maven_path))
+    stop("Can't find Maven. Specify options(maven.home = ...) or run install_maven().",
+         call. = FALSE)
+  
+  if (identical(.Platform$OS.type, "windows"))
+    maven_path <- paste0(maven_path, ".cmd")
+  
+  maven_path
+}
+
+maven_found <- function() {
+  if (length(purrr::safely(resolve_maven_path)()$result)) TRUE else FALSE
+}
+
 
 #' Find existing MLeap installations
 #' 
@@ -309,7 +311,7 @@ command_success <- function(result) {
 }
 
 load_mleap_jars <- function(version = NULL) {
-  rJava::.jpackage("mleap",
-                   morePaths = list.files(resolve_mleap_path(version),
-                                          full.names = TRUE))
+  # rJava::.jpackage("mleap",
+  #                  morePaths = list.files(resolve_mleap_path(version),
+  #                                         full.names = TRUE))
 }

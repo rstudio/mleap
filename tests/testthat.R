@@ -1,4 +1,4 @@
 library(testthat)
 library(mleap)
 
-test_check("mleap")
+# test_check("mleap")
