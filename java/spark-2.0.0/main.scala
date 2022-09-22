@@ -5,12 +5,11 @@ import org.apache.spark.ml.bundle.SparkBundleContext
 import org.apache.spark.ml.mleap.SparkUtil
 import ml.combust.mleap.spark.SparkSupport._
 import resource._
-import ml.combust.bundle.BundleFile
+import ml.combust.bundle._
 
 
-import org.apache.spark.ml.Transformer
+import org.apache.spark.ml._
 import org.apache.spark.sql._
-
 
 
 object Main {
