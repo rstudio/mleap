@@ -32,8 +32,13 @@ uri <- function(path) {
 }
 
 spark_dependencies <- function(spark_version, scala_version, ...) {
-  mleap_version <- if (spark_version >= "2.4.0") {
-    "0.16.0"
+  mleap_version <- if (spark_version >= "3.2.0") {
+    "0.20.0"
+  } else if (spark_version >= "3.0.2") {
+    "0.19.0" 
+  }
+    else if (spark_version >= "2.4.0") {
+    "0.15.0"
   } else if (spark_version >= "2.3.0") {
     "0.13.0"
   } else {

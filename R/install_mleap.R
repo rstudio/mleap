@@ -1,105 +1,54 @@
-#' Install Maven
+#' Install MLeap runtime
 #' 
-#' This function installs Apache Maven.
-#' 
-#' @param dir (Optional) Directory to install maven in.
-#'   Defaults to \code{maven/} under user's home directory.
-#' @param version Version of Maven to install, defaults to the latest version tested with this package.
+#' @param dir (Optional) Directory to save the jars
+#' @param version Version of MLeap to install, defaults to the latest version tested with this package.
+#' @param use_temp_cache Whether to use a temporary Maven cache directory for downloading.
+#'   Setting this to \code{TRUE} prevents Maven from creating a persistent \code{.m2/} directory.
+#'   Defaults to \code{TRUE}.
 #' 
 #' @examples 
 #' \dontrun{
-#' install_maven()
+#' install_mleap()
 #' }
-#' 
 #' @export
-install_maven <- function(dir = NULL, version = NULL) {
+install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
+  version <- version %||% .globals$default_mleap_version
   
-  if (maven_found()) {
-    message("Maven already installed.")
+  if (mleap_found(version)) {
+    message("MLeap Runtime version ", version, " already installed.")
     return(invisible(NULL))
   }
   
-  version <- version %||% .globals$default_maven_version
+  mvn <- resolve_maven_path()
+  if (!length(mvn)) stop("MLeap installation failed. Maven must be installed.")
   
-  maven_dir <- dir %||% install_dir("maven")
-  if (!dir.exists(maven_dir))
-    dir.create(maven_dir)
-  
-  maven_path <- file.path(
-    maven_dir, 
-    sprintf("apache-maven-%s-bin.tar.gz", version)
-  )
-  
-  utils::download.file(
-    get_maven_download_link(version = version),
-    maven_path
-  )
-  
-  checksum_url <- paste0("https://www.apache.org/dist/maven/maven-3/",
-                         version,
-                         "/binaries/apache-maven-",
-                         version,
-                         "-bin.tar.gz.sha512")
-  
-  if (!identical(digest::digest(file = normalizePath(maven_path),
-                                algo = "sha512"),
-                 readChar(checksum_url, nchars = 128)
-  )) {
-    fs::file_delete(maven_path)
-    stop("Maven installation failed. Unable to verify checksum.")
+  mleap_dir <- if (!is.null(dir)) {
+    normalizePath(
+      file.path(dir, paste0("mleap-", version)), 
+      mustWork = FALSE
+    )
+  } else {
+    install_dir(paste0("mleap/mleap-", version))
   }
   
-  status <- utils::untar(maven_path, compressed = "gzip",
-                         exdir = maven_dir)
-  if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
-  fs::file_delete(maven_path)
+  if (!fs::dir_exists(mleap_dir))
+    fs::dir_create(mleap_dir, recursive = TRUE)
   
-  .globals$maven_dir <- maven_dir
-  message("Maven installation succeeded.")
+  message("Downloading MLeap Runtime ", version, "...")
+  
+  tryCatch(
+    download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.12:", version), mleap_dir,
+                  use_temp_cache = use_temp_cache),
+    error = function(e) {fs::dir_delete(mleap_dir); stop(e)}
+  )
+  
+  .globals$mleap_dir <- dirname(mleap_dir)
+  
+  load_mleap_jars(version)
+  
+  message("MLeap Runtime version ", version, " installation succeeded.")
   invisible(NULL)
 }
-
-
-install_dir <- function(dir_name) {
-  dirs <- list(
-    unix = paste0("~/", dir_name),
-    windows = paste0("%LOCALAPPDATA%/", dir_name)
-  )
-  
-  resolve_envpath <- function(path_with_end) {
-    if (.Platform$OS.type == "windows") {
-      parts <- strsplit(path_with_end, "/")[[1]]
-      first <- gsub("%", "", parts[[1]])
-      if (nchar(Sys.getenv(first)) > 0) parts[[1]] <- Sys.getenv(first)
-      do.call("file.path", as.list(parts))
-    }
-    else {
-      normalizePath(path_with_end, mustWork = FALSE)
-    }
-  }
-  
-  getOption("maven.install.dir", resolve_envpath(dirs[[.Platform$OS.type]]))
-}
-
-resolve_maven_path <- function() {
-  maven_dir <- getOption("maven.home", .globals$maven_dir) %||% install_dir("maven")
-  maven_path <- list.files(maven_dir, full.names = TRUE, recursive = TRUE) %>%
-    grep("/bin/mvn$", ., value = TRUE) %>%
-    utils::head(1)
-  if (!length(maven_path))
-    stop("Can't find Maven. Specify options(maven.home = ...) or run install_maven().",
-         call. = FALSE)
-  
-  if (identical(.Platform$OS.type, "windows"))
-    maven_path <- paste0(maven_path, ".cmd")
-  
-  maven_path
-}
-
-maven_found <- function() {
-  if (length(purrr::safely(resolve_maven_path)()$result)) TRUE else FALSE
-}
-
 
 #' Find existing MLeap installations
 #' 
@@ -149,58 +98,7 @@ mleap_found <- function(version = NULL) {
   if (length(purrr::safely(resolve_mleap_path)(version)$result)) TRUE else FALSE
 }
 
-#' Install MLeap runtime
-#' 
-#' @param dir (Optional) Directory to save the jars
-#' @param version Version of MLeap to install, defaults to the latest version tested with this package.
-#' @param use_temp_cache Whether to use a temporary Maven cache directory for downloading.
-#'   Setting this to \code{TRUE} prevents Maven from creating a persistent \code{.m2/} directory.
-#'   Defaults to \code{TRUE}.
-#' 
-#' @examples 
-#' \dontrun{
-#' install_mleap()
-#' }
-#' @export
-install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
-  version <- version %||% .globals$default_mleap_version
-  
-  if (mleap_found(version)) {
-    message("MLeap Runtime version ", version, " already installed.")
-    return(invisible(NULL))
-  }
-  
-  mvn <- resolve_maven_path()
-  if (!length(mvn)) stop("MLeap installation failed. Maven must be installed.")
-  
-  mleap_dir <- if (!is.null(dir)) {
-    normalizePath(
-      file.path(dir, paste0("mleap-", version)), 
-      mustWork = FALSE
-    )
-  } else {
-    install_dir(paste0("mleap/mleap-", version))
-  }
-  
-  if (!fs::dir_exists(mleap_dir))
-    fs::dir_create(mleap_dir, recursive = TRUE)
-  
-  message("Downloading MLeap Runtime ", version, "...")
-  
-  tryCatch(
-    download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.11:", version), mleap_dir,
-                  use_temp_cache = use_temp_cache),
-    error = function(e) {fs::dir_delete(mleap_dir); stop(e)}
-  )
-  
-  # download_jars(mvn, paste0("ml.combust.mleap:mleap-spark_2.11:", version), mleap_dir)
-  .globals$mleap_dir <- dirname(mleap_dir)
-  
-  load_mleap_jars(version)
-  
-  message("MLeap Runtime version ", version, " installation succeeded.")
-  invisible(NULL)
-}
+
 
 download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
   temp_dir <- tempdir()
@@ -290,7 +188,7 @@ execute_command <- function(args, maven_local_repo) {
   
   if (!is.null(maven_local_repo)) {
     args[[2]] <- c(args[[2]],
-              paste0("-Dmaven.repo.local=", maven_local_repo)
+                   paste0("-Dmaven.repo.local=", maven_local_repo)
     )
   }
   
