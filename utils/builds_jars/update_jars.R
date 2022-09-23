@@ -5,16 +5,8 @@ devtools::load_all()
 
 
 base_folder <- "internal/mleap-spark"
-versions <- list(
-  list(spark = "2.0.0", scala = "2.11", mleap = "0.10.3"),
-  list(spark = "2.1.0", scala = "2.11", mleap = "0.11.0"),
-  list(spark = "2.2.0", scala = "2.11", mleap = "0.11.0"),
-  list(spark = "2.3.0", scala = "2.11", mleap = "0.13.0"),
-  list(spark = "2.4.0", scala = "2.11", mleap = "0.15.0"),
-  list(spark = "2.4.5", scala = "2.12", mleap = "0.17.0"),
-  list(spark = "3.0.2", scala = "2.12", mleap = "0.18.1"),
-  list(spark = "3.2.0", scala = "2.12", mleap = "0.20.0")
-)
+
+versions <- mleap_dep_versions()
 
 # ----------- Completes installation grid, and downloads missing jars ----------
 
@@ -24,8 +16,6 @@ prep_versions <- map(
     x <- .x
     version_path <- paste0(base_folder, "/", x$scala, "-", x$mleap)
     x$version_abs <- path_abs(version_path)
-    x$maven <- sprintf("ml.combust.mleap:mleap-spark_%s:%s", x$scala, x$mleap)
-    x$spark_major <- substr(x$spark, 1, 3)
     x
   }
 )
@@ -66,7 +56,7 @@ mleap_spec <- prep_versions %>%
       spark_version = .x$spark,
       spark_home = spark_home_dir(.x$spark),
       scalac_path = find_scalac(.x$scala),
-      jar_name = sprintf("mleap-%s-%s.jar", .x$spark_major, .x$scala),
+      jar_name = .x$jar_name,
       jar_path = jar_path,
       jar_dep = dir_ls(.x$version_abs)
     )

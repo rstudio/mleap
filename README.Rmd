@@ -54,7 +54,7 @@ pipeline <- ml_pipeline(sc) %>%
 pipeline_model <- ml_fit(pipeline, mtcars_tbl)
 
 # Export model
-model_path <- file.path(tempdir(), "mtcars_model.zip")
+model_path <- file.path("mtcars_model.zip")
 
 ml_write_bundle(pipeline_model, sample_input = mtcars_tbl, path = model_path)
 
