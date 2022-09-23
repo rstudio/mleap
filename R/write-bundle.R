@@ -27,16 +27,16 @@
 #' @export
 ml_write_bundle <- function(x, sample_input, path, overwrite = FALSE) {
   stages <- if (purrr::is_bare_list(x)) {
-    purrr::map(x, sparklyr::spark_jobj)
+    purrr::map(x, spark_jobj)
   } else {
-    list(sparklyr::spark_jobj(x))
+    list(spark_jobj(x))
   }
   
-  sc <- sparklyr::spark_connection(stages[[1]])
+  sc <- spark_connection(stages[[1]])
   
   sdf <- x %>% 
-    sparklyr::ml_transform(sample_input) %>% 
-    sparklyr::spark_dataframe()
+    ml_transform(sample_input) %>% 
+    spark_dataframe()
   
   path <- resolve_path(path)
   
@@ -51,7 +51,7 @@ ml_write_bundle <- function(x, sample_input, path, overwrite = FALSE) {
       fs::file_delete(path)
   }
   
-  sparklyr::invoke_static(sc, "mleap.Main", "exportArrayToBundle",
+  invoke_static(sc, "mleap.Main", "exportArrayToBundle",
                           sdf, uri(path), stages)
   message("Model successfully exported.")
   invisible(NULL)

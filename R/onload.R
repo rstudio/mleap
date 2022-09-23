@@ -1,13 +1,10 @@
-#' @import sparklyr
-.onLoad <- function(libname, pkgname) { # nocov start
+.onLoad <- function(libname, pkgname) { 
   sparklyr::register_extension(pkgname)
   jar_paths <- tryCatch(
     list.files(resolve_mleap_path(), full.names = TRUE),
     error = function(e) ""
   )
-  # rJava::.jpackage(pkgname, lib.loc = libname, 
-  #                  morePaths = jar_paths)
-} # nocov end
+}
 
 mleap_dep_versions <- function(spark_version = NULL, scala_version = NULL) {
   ver <- list(

@@ -1,17 +1,14 @@
 package mleap
 
-import java.io.File
 import org.apache.spark.ml.bundle.SparkBundleContext
-import org.apache.spark.ml.mleap.SparkUtil
 import ml.combust.mleap.spark.SparkSupport._
-import resource._
-import ml.combust.bundle._
+import org.apache.spark.ml.mleap.SparkUtil
+import org.apache.spark.ml.Transformer
+import ml.combust.bundle.BundleFile
 import scala.language.postfixOps
-
-
-import org.apache.spark.ml._
 import org.apache.spark.sql._
-
+import java.io.File
+import resource._
 
 object Main {
   def exportArrayToBundle(dataset: DataFrame, path: String, transformers: Transformer*) : Unit = {
