@@ -16,7 +16,7 @@ versions <- list(
   list(spark = "3.2.0", scala = "2.12", mleap = "0.20.0")
 )
 
-## ----------- Completes installation grid, and downloads missing jars ---------
+# ----------- Completes installation grid, and downloads missing jars ----------
 
 prep_versions <- map(
   versions, 
@@ -44,7 +44,7 @@ for(i in seq_along(versions)) {
 
 }
 
-# -------------- Installs missing local Spark versions ------------------------
+# -------------- Installs missing local Spark versions -------------------------
 siv <- spark_installed_versions()
 unique_siv <- unique(siv$spark)
 needed_versions <- map_chr(versions, ~.x$spark)
@@ -55,6 +55,7 @@ walk(
 )
 
 # ------- Creates sparklyr jar compilation spec and runs compile ---------------
+
 base_spec <- spark_default_compilation_spec()
 jar_path <- base_spec[[1]]$jar_path
 
@@ -64,7 +65,7 @@ mleap_spec <- prep_versions %>%
       spark_version = .x$spark,
       spark_home = spark_home_dir(.x$spark),
       scalac_path = find_scalac(.x$scala),
-      jar_name = sprintf("mleap-%s-%s", .x$spark, .x$scala),
+      jar_name = sprintf("mleap-%s-%s.jar", .x$spark, .x$scala),
       jar_path = jar_path,
       jar_dep = dir_ls(.x$version_abs)
     )
@@ -72,7 +73,4 @@ mleap_spec <- prep_versions %>%
 
 
 compile_package_jars(spec = mleap_spec)
-
-
-
 
