@@ -25,6 +25,7 @@ prep_versions <- map(
     version_path <- paste0(base_folder, "/", x$scala, "-", x$mleap)
     x$version_abs <- path_abs(version_path)
     x$maven <- sprintf("ml.combust.mleap:mleap-spark_%s:%s", x$scala, x$mleap)
+    x$spark_major <- substr(x$spark, 1, 3)
     x
   }
 )
@@ -65,7 +66,7 @@ mleap_spec <- prep_versions %>%
       spark_version = .x$spark,
       spark_home = spark_home_dir(.x$spark),
       scalac_path = find_scalac(.x$scala),
-      jar_name = sprintf("mleap-%s-%s.jar", .x$spark, .x$scala),
+      jar_name = sprintf("mleap-%s-%s.jar", .x$spark_major, .x$scala),
       jar_path = jar_path,
       jar_dep = dir_ls(.x$version_abs)
     )
