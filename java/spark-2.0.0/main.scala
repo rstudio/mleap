@@ -6,6 +6,7 @@ import org.apache.spark.ml.mleap.SparkUtil
 import ml.combust.mleap.spark.SparkSupport._
 import resource._
 import ml.combust.bundle._
+import scala.language.postfixOps
 
 
 import org.apache.spark.ml._

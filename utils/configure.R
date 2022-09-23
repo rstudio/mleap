@@ -70,10 +70,15 @@ mleap_files <- base_folder %>%
   dir_ls(recurse = TRUE) %>% 
   path_abs()
 
-scala_paths <- map(
-  versions, ~ c(.x, list(path = find_scalac(.x$scala), 
-                         jars = path_abs(dir_ls(path(base_folder, .x$scala)))
-                         )))
+vers <- function(x) {
+  c(x, 
+    list(path = find_scalac(x$scala), 
+         jars = path_abs(dir_ls(path(base_folder, x$scala)))
+         )
+  )
+  }
+
+scala_paths <- map(versions, vers)
 
 mleap_spec <- sparklyr_spec %>% 
   keep(~ .x$spark_version >= "2.4.0")  %>% 
@@ -85,7 +90,7 @@ mleap_spec <- sparklyr_spec %>%
     x
   }) 
 
-compile_package_jars(spec = mleap_spec)
+compile_package_jars(spec = mleap_spec[[1]])
 
 
 
