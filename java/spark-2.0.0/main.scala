@@ -7,6 +7,7 @@ import org.apache.spark.ml.Transformer
 import ml.combust.bundle.BundleFile
 import scala.language.postfixOps
 import org.apache.spark.sql._
+import org.apache.spark.ml._
 import java.io.File
 import resource._
 
@@ -17,5 +18,13 @@ object Main {
     for(bf <- managed(BundleFile("jar:" + path))) {
         pipeline.writeBundle.save(bf)get
       }
+  }
+  def importZipTransormer(path: String) : Transformer = {
+    
+    val zipBundle = (for(bundle <- managed(BundleFile("jar:" + path))) yield {
+      bundle.loadSparkBundle().get
+    }).opt.get
+    
+    zipBundle.root
   }
 }

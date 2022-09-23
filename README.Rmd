@@ -43,7 +43,10 @@ We can now export Spark ML pipelines from sparklyr.
 ```{r, message = FALSE}
 library(sparklyr)
 sc <- spark_connect("local", version = "3.2")
-mtcars_tbl <- sdf_copy_to(sc, mtcars, overwrite = TRUE)
+
+mleap_model <- ml_read_bundle("mtcars_model.zip")
+
+
 
 # Create a pipeline and fit it
 pipeline <- ml_pipeline(sc) %>%
@@ -57,6 +60,8 @@ pipeline_model <- ml_fit(pipeline, mtcars_tbl)
 model_path <- file.path("mtcars_model.zip")
 
 ml_write_bundle(pipeline_model, sample_input = mtcars_tbl, path = model_path, overwrite = TRUE)
+
+
 
 # Disconnect from Spark
 spark_disconnect(sc)

@@ -1,3 +1,16 @@
+#' Loads an MLeap bundle into Spark
+#' 
+#' @param path Path to the exported bundle zip file.
+#' @return An Spark ML Pipeline model object.
+#'
+#' @export
+ml_read_bundle <- function(path) {
+  obj <- invoke_static(sc, "mleap.Main", "importZipTransormer", uri(path_abs(path)))
+  ml_call_constructor(obj)
+}
+
+
+
 #' Loads an MLeap bundle
 #' 
 #' @param path Path to the exported bundle zip file.

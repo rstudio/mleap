@@ -60,7 +60,7 @@ mleap_spec <- prep_versions %>%
       jar_path = jar_path,
       jar_dep = dir_ls(.x$version_abs)
     )
-  })
+  }) 
 
 
 compile_package_jars(spec = mleap_spec)
