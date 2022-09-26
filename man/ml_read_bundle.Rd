@@ -4,9 +4,11 @@
 \alias{ml_read_bundle}
 \title{Loads an MLeap bundle into Spark}
 \usage{
-ml_read_bundle(path)
+ml_read_bundle(sc, path)
 }
 \arguments{
+\item{sc}{Spark connection}
+
 \item{path}{Path to the exported bundle zip file.}
 }
 \value{

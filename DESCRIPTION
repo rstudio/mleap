@@ -14,7 +14,7 @@ BugReports: https://github.com/rstudio/mleap/issues
 License: Apache License (>= 2.0)
 SystemRequirements: Apache Spark 2.0+, Apache Maven 3.5+, Java JDK 8, MLeap Runtime 0.10.1+
 Encoding: UTF-8
-LazyData: true
+LazyData: false
 Depends:
   R (>= 3.1.2)
 Imports:

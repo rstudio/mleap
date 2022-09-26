@@ -17,10 +17,10 @@ object Main {
         pm.writeBundle.save(bf)(sbc)get
     })
   }
-  def importZipTransormer(path: String) : Transformer = {
-    val zipBundle = (for(bundle <- managed(BundleFile("jar:" + path))) yield {
+  def importZipTransformer(path: String) : Transformer = {
+    val zb = (for(bundle <- managed(BundleFile("jar:" + path))) yield {
       bundle.loadSparkBundle().get
     }).opt.get
-    zipBundle.root
+    zb.root
   }
 }

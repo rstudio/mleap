@@ -4,12 +4,12 @@
 \alias{ml_write_bundle}
 \title{Export a Spark pipeline for serving}
 \usage{
-ml_write_bundle(x, sample_input, path, overwrite = FALSE)
+ml_write_bundle(x, transformed_dataset, path, overwrite = FALSE)
 }
 \arguments{
-\item{x}{A Spark pipeline model object.}
+\item{x}{A Spark ML Pipeline Model object.}
 
-\item{sample_input}{A sample input Spark DataFrame with the expected schema.}
+\item{transformed_dataset}{A Spark data frame created by the ML Pipeline Model (\code{x})}
 
 \item{path}{Where to save the bundle.}
 
@@ -21,18 +21,27 @@ This functions serializes a Spark pipeline model into an MLeap bundle.
 \examples{
 \dontrun{
 library(sparklyr)
+
 sc <- spark_connect(master = "local")
-mtcars_tbl <- sdf_copy_to(sc, mtcars, overwrite = TRUE)
+
+mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
+
 pipeline <- ml_pipeline(sc) \%>\%
   ft_binarizer("hp", "big_hp", threshold = 100) \%>\%
   ft_vector_assembler(c("big_hp", "wt", "qsec"), "features") \%>\%
   ml_gbt_regressor(label_col = "mpg")
+  
 pipeline_model <- ml_fit(pipeline, mtcars_tbl)
+
+preds <- ml_transform(pipeline_model, mtcars_tbl)
+
 model_path <- file.path(tempdir(), "mtcars_model.zip")
-ml_write_bundle(pipeline_model, 
-                mtcars_tbl,
-                model_path,
-                overwrite = TRUE)
+
+ml_write_bundle(x = pipeline_model, 
+                transformed_dataset = preds,
+                path = model_path,
+                overwrite = TRUE
+                )
 }
 
 }
