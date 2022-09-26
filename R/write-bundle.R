@@ -51,8 +51,7 @@ ml_write_bundle <- function(x, sample_input, path, overwrite = FALSE) {
       fs::file_delete(path)
   }
   
-  invoke_static(sc, "mleap.Main", "exportArrayToBundle",
-                          sdf, uri(path), stages)
+  invoke_static(sc, "mleap.Main", "exportTransformer", sdf, uri(path), stages)
   message("Model successfully exported.")
   invisible(NULL)
 }

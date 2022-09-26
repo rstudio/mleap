@@ -8,23 +8,19 @@ import ml.combust.bundle.BundleFile
 import scala.language.postfixOps
 import org.apache.spark.sql._
 import org.apache.spark.ml._
-import java.io.File
 import resource._
 
 object Main {
-  def exportArrayToBundle(dataset: DataFrame, path: String, transformers: Transformer*) : Unit = {
-    val pipeline = SparkUtil.createPipelineModel(transformers.toArray)
+  def exportTransformer(dataset: DataFrame, path: String, pm: PipelineModel) : Unit = {
     implicit val sbc = SparkBundleContext().withDataset(dataset)
-    for(bf <- managed(BundleFile("jar:" + path))) {
-        pipeline.writeBundle.save(bf)get
-      }
+    (for(bf <- managed(BundleFile("jar:" + path))) {
+        pm.writeBundle.save(bf)(sbc)get
+    })
   }
   def importZipTransormer(path: String) : Transformer = {
-    
     val zipBundle = (for(bundle <- managed(BundleFile("jar:" + path))) yield {
       bundle.loadSparkBundle().get
     }).opt.get
-    
     zipBundle.root
   }
 }
