@@ -20,25 +20,25 @@ ml_read_bundle <- function(sc, path) {
 #'
 #' @export
 mleap_load_bundle <- function(path) {
-  # # if mleap runtime jars aren't in class path (from package load),
-  # #   load jars
-  # if (!any(grepl("mleap-runtime", rJava::.jclassPath())))
-  #   load_mleap_jars()
-  # 
-  # ctx_builder <- rJava::.jnew("ml.combust.mleap.runtime.javadsl.ContextBuilder")
-  # ctx <- rJava::.jcall(
-  #   ctx_builder, "Lml/combust/mleap/runtime/MleapContext;", 
-  #   "createMleapContext"
-  # )
-  # path <- normalizePath(path)
-  # bundle_file <- rJava::.jnew("java.io.File", path)
-  # bundle_builder <- rJava::.jnew("ml.combust.mleap.runtime.javadsl.BundleBuilder")
-  # transformer <- rJava::.jcall(
-  #   bundle_builder,
-  #   "Lml/combust/bundle/dsl/Bundle;",
-  #   "load", bundle_file, ctx
-  # )
-  # new_mleap_transformer(transformer)
+  # if mleap runtime jars aren't in class path (from package load),
+  #   load jars
+  if (!any(grepl("mleap-runtime", .jclassPath())))
+    load_mleap_jars()
+
+  ctx_builder <- .jnew("ml.combust.mleap.runtime.javadsl.ContextBuilder")
+  ctx <- .jcall(
+    ctx_builder, "Lml/combust/mleap/runtime/MleapContext;",
+    "createMleapContext"
+  )
+  path <- normalizePath(path)
+  bundle_file <- .jnew("java.io.File", path)
+  bundle_builder <- .jnew("ml.combust.mleap.runtime.javadsl.BundleBuilder")
+  transformer <- .jcall(
+    bundle_builder,
+    "Lml/combust/bundle/dsl/Bundle;",
+    "load", bundle_file, ctx
+  )
+  new_mleap_transformer(transformer)
 }
 
 new_mleap_transformer <- function(jobj) {
@@ -57,39 +57,39 @@ new_mleap_transformer <- function(jobj) {
 }
 
 retrieve_model_schema <- function(jobj) {
-  # input_schema <- jobj$root()$inputSchema()$fields()
-  # output_schema <- jobj$root()$outputSchema()$fields()
-  # ct <- rJava::.jnew("scala.reflect.ClassTag$")
-  # ct <- ct$`MODULE$`$apply(input_schema$head()$getClass())
-  # 
-  # get_schema_tbl <- function(schema, ct, io) {
-  #   df <- schema$toArray(ct) %>%
-  #     as.list() %>%
-  #     purrr::map(function(x) {
-  #       data_type <- x$dataType()
-  #       base_type <- data_type$base()$toString()
-  #       dimensions <- tryCatch(
-  #         data_type$dimensions()$get()$toIterable()$array() %>%
-  #           paste0("(", ., ")", collapse = ", "),
-  #         error = function(e) NA_character_
-  #       )
-  #       is_nullable <- data_type$isNullable()
-  #       list(x$name(),
-  #            base_type,
-  #            is_nullable,
-  #            dimensions)
-  #     }) %>%
-  #     purrr::transpose() %>%
-  #     purrr::set_names(c("name", "type", "nullable", "dimension")) %>%
-  #     purrr::map(unlist) %>%
-  #     tibble::as_tibble()
-  #   
-  #   df$io <- io
-  #   df
-  # }
-  # 
-  # rbind(
-  #   get_schema_tbl(input_schema, ct, "input"),
-  #   get_schema_tbl(output_schema, ct, "output")
-  # )
+  input_schema <- jobj$root()$inputSchema()$fields()
+  output_schema <- jobj$root()$outputSchema()$fields()
+  ct <- .jnew("scala.reflect.ClassTag$")
+  ct <- ct$`MODULE$`$apply(input_schema$head()$getClass())
+
+  get_schema_tbl <- function(schema, ct, io) {
+    df <- schema$toArray(ct) %>%
+      as.list() %>%
+      map(function(x) {
+        data_type <- x$dataType()
+        base_type <- data_type$base()$toString()
+        dimensions <- tryCatch(
+          data_type$dimensions()$get()$toIterable()$array() %>%
+            paste0("(", ., ")", collapse = ", "),
+          error = function(e) NA_character_
+        )
+        is_nullable <- data_type$isNullable()
+        list(x$name(),
+             base_type,
+             is_nullable,
+             dimensions)
+      }) %>%
+      transpose() %>%
+      set_names(c("name", "type", "nullable", "dimension")) %>%
+      map(unlist) %>%
+      as_tibble()
+
+    df$io <- io
+    df
+  }
+
+  rbind(
+    get_schema_tbl(input_schema, ct, "input"),
+    get_schema_tbl(output_schema, ct, "output")
+  )
 }

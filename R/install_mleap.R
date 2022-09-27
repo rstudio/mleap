@@ -31,15 +31,15 @@ install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
     install_dir(paste0("mleap/mleap-", version))
   }
   
-  if (!fs::dir_exists(mleap_dir))
-    fs::dir_create(mleap_dir, recursive = TRUE)
+  if (!dir_exists(mleap_dir))
+    dir_create(mleap_dir, recurse = TRUE)
   
   message("Downloading MLeap Runtime ", version, "...")
   
   tryCatch(
     download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.12:", version), mleap_dir,
                   use_temp_cache = use_temp_cache),
-    error = function(e) {fs::dir_delete(mleap_dir); stop(e)}
+    error = function(e) {dir_delete(mleap_dir); stop(e)}
   )
   
   .globals$mleap_dir <- dirname(mleap_dir)
@@ -105,7 +105,7 @@ download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
   
   maven_local_repo <- if (use_temp_cache) {
     temp_repo <- paste0(temp_dir, "/local_repo")
-    fs::dir_create(temp_repo)
+    dir_create(temp_repo)
     temp_repo
   }
   
@@ -209,7 +209,9 @@ command_success <- function(result) {
 }
 
 load_mleap_jars <- function(version = NULL) {
-  # rJava::.jpackage("mleap",
-  #                  morePaths = list.files(resolve_mleap_path(version),
-  #                                         full.names = TRUE))
+  mleap_path <- resolve_mleap_path(version)
+  .jpackage(
+    "mleap",
+    morePaths = list.files(mleap_path, full.names = TRUE)
+    )
 }

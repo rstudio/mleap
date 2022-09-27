@@ -44,9 +44,9 @@ We can now export Spark ML pipelines from sparklyr.
 library(sparklyr)
 sc <- spark_connect("local", version = "3.2")
 
-mleap_model <- ml_read_bundle("mtcars_model.zip")
+#mleap_model <- ml_read_bundle("mtcars_model.zip")
 
-
+mtcars_tbl <- copy_to(sc, mtcars)
 
 # Create a pipeline and fit it
 pipeline <- ml_pipeline(sc) %>%
@@ -59,12 +59,19 @@ pipeline_model <- ml_fit(pipeline, mtcars_tbl)
 # Export model
 model_path <- file.path("mtcars_model.zip")
 
-ml_write_bundle(pipeline_model, sample_input = mtcars_tbl, path = model_path, overwrite = TRUE)
+preds <- ml_transform(pipeline_model, mtcars_tbl)
+
+ml_write_bundle(
+  x = pipeline_model,  
+  transformed_dataset = preds, 
+  path = model_path, 
+  overwrite = TRUE
+  )
 
 
 
 # Disconnect from Spark
-spark_disconnect(sc)
+#spark_disconnect(sc)
 ```
 
 At this point, we can share `mtcars_model.zip` with our deployment/implementation engineers, and they would be able to embed the model in another application. See the [MLeap docs](http://mleap-docs.combust.ml/) for details.

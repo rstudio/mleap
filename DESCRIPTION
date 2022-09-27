@@ -1,11 +1,19 @@
 Package: mleap
 Type: Package
 Title: Interface to 'MLeap'
-Version: 1.0.0
+Version: 1.0.0.9000
 Authors@R: c(
-  person("Kevin", "Kuo", role = c("aut", "cre"), email = "kevin.kuo@rstudio.com",
-  comment = c(ORCID = "0000-0001-7803-7901"))
-  )
+       person(given = "Kevin",
+             family = "Kuo",
+             role = "aut",
+             email = "kevin.kuo@rstudio.com",
+             comment = c(ORCID = "0000-0001-7803-7901")),
+      person(given = "Edgar",
+             family = "Ruiz",
+             role = c("aut", "cre"),
+             email = "edgar@rstudio.com"
+             )  
+           )
 Description: A 'sparklyr' <https://spark.rstudio.com> extension that provides
   an interface to 'MLeap' <https://github.com/combust/mleap>, an open source library
   that enables exporting and serving of 'Apache Spark' pipelines.
@@ -21,12 +29,13 @@ Imports:
   sparklyr,
   jsonlite,
   purrr,
-  fs,
   tibble,
-  digest
+  digest, 
+  rJava,
+  fs
 RoxygenNote: 7.2.1
 Suggests: 
     testthat,
-    covr,
     ggplot2,
-    dplyr
+    dplyr,
+    covr

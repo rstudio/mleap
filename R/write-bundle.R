@@ -51,7 +51,7 @@ ml_write_bundle <- function(x, transformed_dataset, path, overwrite = FALSE) {
       file_delete(path)
   }
   
-  invoke_static(spark_connection(stages[[1]]), 
+  invoke_static(spark_connection(x), 
                 "mleap.Main", 
                 "exportTransformer", 
                 spark_dataframe(transformed_dataset), 

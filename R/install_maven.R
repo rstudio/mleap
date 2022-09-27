@@ -45,14 +45,14 @@ install_maven <- function(dir = NULL, version = NULL) {
                                 algo = "sha512"),
                  readChar(checksum_url, nchars = 128)
   )) {
-    fs::file_delete(maven_path)
+    file_delete(maven_path)
     stop("Maven installation failed. Unable to verify checksum.")
   }
   
   status <- utils::untar(maven_path, compressed = "gzip",
                          exdir = maven_dir)
   if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
-  fs::file_delete(maven_path)
+  file_delete(maven_path)
   
   .globals$maven_dir <- maven_dir
   message("Maven installation succeeded.")
