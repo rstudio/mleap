@@ -60,7 +60,7 @@ mleap_installed_versions <- function() {
   mleap_dir <- .globals$mleap_dir %||% install_dir("mleap")
   dirs <- c(getOption("mleap.home"), list.files(mleap_dir, full.names = TRUE))
   versions <- dirs %>%
-    purrr::map_chr(~ gsub("mleap-", "", basename(.x)))
+    map_chr(~ gsub("mleap-", "", basename(.x)))
   
   data.frame(mleap = versions, dir = dirs,
              stringsAsFactors = FALSE) %>%
@@ -76,8 +76,8 @@ resolve_mleap_path <- function(version = NULL) {
     stop("Can't find MLeap Runtime jars. Specify options(mleap.home = ...) or run install_mleap().")
   
   version <- version %||% (installed_versions$mleap %>%
-                             purrr::map(~ numeric_version(.x)) %>%
-                             purrr::reduce(~ (if (.x > .y) .x else .y)) %>%
+                             map(~ numeric_version(.x)) %>%
+                             reduce(~ (if (.x > .y) .x else .y)) %>%
                              as.character())
   version_index <- which(version == installed_versions$mleap)[[1]]
   if (!length(version_index))
@@ -95,7 +95,7 @@ resolve_mleap_path <- function(version = NULL) {
 }
 
 mleap_found <- function(version = NULL) {
-  if (length(purrr::safely(resolve_mleap_path)(version)$result)) TRUE else FALSE
+  if (length(safely(resolve_mleap_path)(version)$result)) TRUE else FALSE
 }
 
 

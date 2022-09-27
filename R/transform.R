@@ -27,7 +27,7 @@ mleap_transform <- function(model, data) {
     map(unname)
 
   data_json <- list(schema = schema, rows = rows) %>%
-    jsonlite::toJSON(auto_unbox = TRUE)
+    toJSON(auto_unbox = TRUE)
 
   data_bytes <- .jnew("scala.io.Source$") %>%
     .jcall("Lscala/io/Source;", "fromString", as.character(data_json)) %>%
@@ -63,16 +63,17 @@ mleap_transform <- function(model, data) {
   parse_mleap_json <- function(x) {
     col_names <- x$schema$fields %>%
       map_chr("name")
+    
     x$rows %>%
       transpose() %>%
       set_names(col_names) %>%
       map_if(~ !is.list(.x[[1]]), unlist) %>%
-      tibble::as_tibble()
+      as_tibble()
   }
 
   frame_writer$toBytes(frame_writer$`toBytes$default$1`())$get() %>%
     rawToChar() %>%
-    jsonlite::fromJSON(simplifyVector = FALSE) %>%
+    fromJSON(simplifyVector = FALSE) %>%
     parse_mleap_json()
 }
 
