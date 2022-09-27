@@ -30,18 +30,19 @@ pipeline <- ml_pipeline(sc) \%>\%
   ft_binarizer("hp", "big_hp", threshold = 100) \%>\%
   ft_vector_assembler(c("big_hp", "wt", "qsec"), "features") \%>\%
   ml_gbt_regressor(label_col = "mpg")
-  
+
 pipeline_model <- ml_fit(pipeline, mtcars_tbl)
 
 preds <- ml_transform(pipeline_model, mtcars_tbl)
 
 model_path <- file.path(tempdir(), "mtcars_model.zip")
 
-ml_write_bundle(x = pipeline_model, 
-                transformed_dataset = preds,
-                path = model_path,
-                overwrite = TRUE
-                )
+ml_write_bundle(
+  x = pipeline_model,
+  transformed_dataset = preds,
+  path = model_path,
+  overwrite = TRUE
+)
 }
 
 }

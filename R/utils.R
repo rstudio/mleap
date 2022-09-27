@@ -1,8 +1,7 @@
 resolve_path <- function(path) {
   if (grepl("[a-zA-Z]+://", path)) {
     path
-  }
-  else {
+  } else {
     dir_path <- path %>%
       normalizePath(mustWork = FALSE, winslash = "/") %>%
       dirname() %>%
@@ -15,5 +14,3 @@ uri <- function(path) {
   prefix <- if (.Platform$OS.type == "windows") "file:///" else "file:"
   paste0(prefix, path)
 }
-
-

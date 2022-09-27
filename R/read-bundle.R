@@ -1,5 +1,5 @@
 #' Loads an MLeap bundle into Spark
-#' 
+#'
 #' @param sc Spark connection
 #' @param path Path to the exported bundle zip file.
 #' @return An Spark ML Pipeline model object.
@@ -14,7 +14,7 @@ ml_read_bundle <- function(sc, path) {
 
 
 #' Loads an MLeap bundle
-#' 
+#'
 #' @param path Path to the exported bundle zip file.
 #' @return An MLeap model object.
 #'
@@ -22,8 +22,9 @@ ml_read_bundle <- function(sc, path) {
 mleap_load_bundle <- function(path) {
   # if mleap runtime jars aren't in class path (from package load),
   #   load jars
-  if (!any(grepl("mleap-runtime", .jclassPath())))
+  if (!any(grepl("mleap-runtime", .jclassPath()))) {
     load_mleap_jars()
+  }
 
   ctx_builder <- .jnew("ml.combust.mleap.runtime.javadsl.ContextBuilder")
   ctx <- .jcall(
@@ -74,10 +75,12 @@ retrieve_model_schema <- function(jobj) {
           error = function(e) NA_character_
         )
         is_nullable <- data_type$isNullable()
-        list(x$name(),
-             base_type,
-             is_nullable,
-             dimensions)
+        list(
+          x$name(),
+          base_type,
+          is_nullable,
+          dimensions
+        )
       }) %>%
       transpose() %>%
       set_names(c("name", "type", "nullable", "dimension")) %>%

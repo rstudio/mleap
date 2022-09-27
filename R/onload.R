@@ -1,4 +1,4 @@
-.onLoad <- function(libname, pkgname) { 
+.onLoad <- function(libname, pkgname) {
   sparklyr::register_extension(pkgname)
   jar_paths <- tryCatch(
     list.files(resolve_mleap_path(), full.names = TRUE),
@@ -8,7 +8,6 @@
 }
 
 spark_dependencies <- function(spark_version, scala_version, ...) {
-  
   mleap_version <- mleap_dep_versions_list(spark_version, scala_version)
 
   sparklyr::spark_dependency(
@@ -21,7 +20,6 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
     ),
     packages = mleap_version$maven
   )
-  
 }
 
 temp_tibble <- function(x) tibble::as_tibble(x)
