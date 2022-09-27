@@ -1,5 +1,3 @@
-context("installation")
-
 test_that("install_maven() works", {
   skip_on_cran()
   if (mleap:::maven_found()) skip("Maven already installed.")

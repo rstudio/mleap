@@ -1,15 +1,15 @@
-context("save/load/predict")
-
 test_that("We can export and use pipeline model", {
   skip_on_cran()
   sc <- testthat_spark_connection()
   
   library(sparklyr)
   mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
+  
   pipeline <- ml_pipeline(sc) %>%
     ft_binarizer("hp", "big_hp", threshold = 100) %>%
     ft_vector_assembler(c("big_hp", "wt", "qsec"), "features") %>%
     ml_gbt_regressor(label_col = "mpg")
+  
   pipeline_model <- ml_fit(pipeline, mtcars_tbl)
   
   # export model

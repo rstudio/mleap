@@ -7,7 +7,21 @@ output:
 ---
 
 ```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "",
+  fig.path = "man/figures/README-",
+  out.width = "100%",
+  eval = TRUE
+)
+
+Sys.setenv("JAVA_HOME" = "/Library/Java/JavaVirtualMachines/jdk-18.0.1.1.jdk/Contents/Home")
+rJava::.jinit() 
 library(mleap)
+
+
+Sys.setenv("JAVA_HOME" = "/usr/local/java")
+
 ```
 
 [![Travis build status](https://travis-ci.org/rstudio/mleap.svg?branch=master)](https://travis-ci.org/rstudio/mleap) [![Coverage status](https://codecov.io/gh/rstudio/mleap/branch/master/graph/badge.svg)](https://codecov.io/github/rstudio/mleap?branch=master) [![CRAN status](https://www.r-pkg.org/badges/version/mleap)](https://cran.r-project.org/package=mleap)
@@ -36,15 +50,15 @@ install_maven()
 # Alternatively, if you already have Maven installed, you can 
 #  set options(maven.home = "path/to/maven")
 install_mleap()
+
 ```
+
 
 We can now export Spark ML pipelines from sparklyr.
 
 ```{r, message = FALSE}
 library(sparklyr)
 sc <- spark_connect("local", version = "3.2")
-
-#mleap_model <- ml_read_bundle("mtcars_model.zip")
 
 mtcars_tbl <- copy_to(sc, mtcars)
 
@@ -63,7 +77,7 @@ preds <- ml_transform(pipeline_model, mtcars_tbl)
 
 ml_write_bundle(
   x = pipeline_model,  
-  transformed_dataset = preds, 
+  sample_input = mtcars_tbl, 
   path = model_path, 
   overwrite = TRUE
   )
@@ -71,7 +85,7 @@ ml_write_bundle(
 
 
 # Disconnect from Spark
-#spark_disconnect(sc)
+spark_disconnect(sc)
 ```
 
 At this point, we can share `mtcars_model.zip` with our deployment/implementation engineers, and they would be able to embed the model in another application. See the [MLeap docs](http://mleap-docs.combust.ml/) for details.
