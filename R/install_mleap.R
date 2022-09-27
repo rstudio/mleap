@@ -19,7 +19,7 @@ install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
     return(invisible(NULL))
   }
   
-  version_deps <- mleap_dep_versions(mleap_version = version)
+  version_deps <- mleap_dep_versions_list(mleap_version = version)
   
   mvn <- resolve_maven_path()
   
@@ -181,7 +181,7 @@ maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
 }
 
 get_preferred_apache_mirror <- function() {
-  mirrors_info <- jsonlite::fromJSON("https://apache.org/dyn/closer.cgi?as_json=1")
+  mirrors_info <- fromJSON("https://apache.org/dyn/closer.cgi?as_json=1")
   mirrors_info$preferred
 }
 

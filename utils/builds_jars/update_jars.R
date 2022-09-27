@@ -6,7 +6,7 @@ devtools::load_all()
 
 base_folder <- "internal/mleap-spark"
 
-versions <- mleap_dep_versions()
+versions <- mleap_dep_versions_list()
 
 # ----------- Completes installation grid, and downloads missing jars ----------
 

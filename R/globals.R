@@ -10,4 +10,4 @@ config <- jsonlite::fromJSON(json_config)
 .globals$maven_dir <- NULL
 .globals$mleap_dir <- NULL
 
-utils::globalVariables(".")
+globalVariables(".")

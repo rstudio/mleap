@@ -43,6 +43,8 @@ or, for the latest development version from GitHub, using
 devtools::install_github("rstudio/mleap")
 ```
 
+## Install Maven and MLeap
+
 Once mleap has been installed, we can install the external dependencies using
 
 ```{r eval = FALSE}
@@ -53,6 +55,8 @@ install_maven()
 install_mleap()
 
 ```
+
+## Example
 
 ```{r}
 library(sparklyr)
@@ -87,8 +91,8 @@ sff_pipeline <- ml_pipeline(sc) %>%
   ft_hashing_tf(
     input_col = "wo_stop_words", 
     output_col = "hashed_features", 
-    binary = TRUE, 
-    num_features = 4096
+    num_features = 4096,
+    binary = TRUE
     ) %>%
   ft_normalizer(
     input_col = "hashed_features", 
@@ -98,7 +102,7 @@ sff_pipeline <- ml_pipeline(sc) %>%
     input_cols = "normal_features",
     output_col = "features"
   ) %>% 
-  ml_logistic_regression(elastic_net_param = 0.05, reg_param = 0.25  )  
+  ml_logistic_regression(elastic_net_param = 0.05, reg_param = 0.25)  
 
 sff_pipeline_model <- ml_fit(sff_pipeline, sff_training_data)
 
@@ -133,7 +137,7 @@ mleap_model_schema(sff_mleap_model)
 ```{r}
 tibble(review = "worst bad thing I will never buy again", score = "") %>% 
   mleap_transform(sff_mleap_model, .) %>% 
-  dplyr::glimpse()
+  glimpse()
 ```
 
 ```{r}

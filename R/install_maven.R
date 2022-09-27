@@ -30,7 +30,7 @@ install_maven <- function(dir = NULL, version = NULL) {
     sprintf("apache-maven-%s-bin.tar.gz", version)
   )
   
-  utils::download.file(
+  download.file(
     get_maven_download_link(version = version),
     maven_path
   )
@@ -49,7 +49,7 @@ install_maven <- function(dir = NULL, version = NULL) {
     stop("Maven installation failed. Unable to verify checksum.")
   }
   
-  status <- utils::untar(maven_path, compressed = "gzip",
+  status <- untar(maven_path, compressed = "gzip",
                          exdir = maven_dir)
   if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
   
@@ -85,7 +85,7 @@ resolve_maven_path <- function() {
   maven_dir <- getOption("maven.home", .globals$maven_dir) %||% install_dir("maven")
   maven_path <- list.files(maven_dir, full.names = TRUE, recursive = TRUE) %>%
     grep("/bin/mvn$", ., value = TRUE) %>%
-    utils::head(1)
+    head(1)
   if (!length(maven_path))
     stop("Can't find Maven. Specify options(maven.home = ...) or run install_maven().",
          call. = FALSE)
