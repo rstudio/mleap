@@ -5,6 +5,9 @@ library(tibble)
 library(magrittr)
 library(purrr)
 
+install_maven()
+install_mleap()
+
 sff_mleap_model <- mleap_load_bundle("sff.zip")
 
 

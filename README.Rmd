@@ -145,3 +145,15 @@ tibble(review = "I really loved the proudct best product", score = "") %>%
   mleap_transform(sff_mleap_model, .) %>% 
   dplyr::glimpse()
 ```
+
+## Shiny app
+
+A very simple Shiny app 
+
+```{r, eval = FALSE}
+remotes::install_github("rstudio/mleap", ref = "fixes")
+shiny::runApp(system.file(package = "mleap", "app"))
+```
+
+
+

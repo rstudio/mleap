@@ -26,6 +26,8 @@ or, for the latest development version from GitHub, using
 devtools::install_github("rstudio/mleap")
 ```
 
+## Install Maven and MLeap
+
 Once mleap has been installed, we can install the external dependencies
 using
 
@@ -36,6 +38,8 @@ install_maven()
 #  set options(maven.home = "path/to/maven")
 install_mleap()
 ```
+
+## Example
 
 ``` r
 library(sparklyr)
@@ -74,8 +78,8 @@ sff_pipeline <- ml_pipeline(sc) %>%
   ft_hashing_tf(
     input_col = "wo_stop_words", 
     output_col = "hashed_features", 
-    binary = TRUE, 
-    num_features = 4096
+    num_features = 4096,
+    binary = TRUE
     ) %>%
   ft_normalizer(
     input_col = "hashed_features", 
@@ -85,7 +89,7 @@ sff_pipeline <- ml_pipeline(sc) %>%
     input_cols = "normal_features",
     output_col = "features"
   ) %>% 
-  ml_logistic_regression(elastic_net_param = 0.05, reg_param = 0.25  )  
+  ml_logistic_regression(elastic_net_param = 0.05, reg_param = 0.25)  
 
 sff_pipeline_model <- ml_fit(sff_pipeline, sff_training_data)
 
@@ -118,8 +122,8 @@ spark_disconnect(sc)
 sff_mleap_model <- mleap_load_bundle("sff.zip")
 sff_mleap_model
 MLeap Transformer
-<64530c35-0f54-41ff-ac1d-4853baff67c8> 
-  Name: pipeline__806171d5_4dd9_46d8_8e9c_361fc28978b8 
+<c098f85f-ec6a-4cd0-b72d-fa5fb622d3de> 
+  Name: pipeline__e4c4715c_ffae_4ef1_a1d9_9679325bf53e 
   Format: json 
   MLeap Version: 0.20.0
 ```
@@ -145,7 +149,7 @@ mleap_model_schema(sff_mleap_model)
 ``` r
 tibble(review = "worst bad thing I will never buy again", score = "") %>% 
   mleap_transform(sff_mleap_model, .) %>% 
-  dplyr::glimpse()
+  glimpse()
 Rows: 1
 Columns: 11
 $ review          <chr> "worst bad thing I will never buy again"
@@ -178,4 +182,13 @@ $ features        <list> [[[2187], [2365], [3229], [3727], [3984]], [0.4472136â€
 $ rawPrediction   <list> [[6.708236, 4.768167, -11.47642], [3]]
 $ probability     <list> [[0.8743598, 0.1256402, 1.107122e-08], [3]]
 $ prediction      <dbl> 0
+```
+
+## Shiny app
+
+A very simple Shiny app
+
+``` r
+remotes::install_github("rstudio/mleap", ref = "fixes")
+shiny::runApp(system.file(package = "mleap", "app"))
 ```
