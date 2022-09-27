@@ -41,10 +41,10 @@ install_maven <- function(dir = NULL, version = NULL) {
                          version,
                          "-bin.tar.gz.sha512")
   
-  if (!identical(digest::digest(file = normalizePath(maven_path),
-                                algo = "sha512"),
+  if (!identical(digest::digest(file = normalizePath(maven_path), algo = "sha512"),
                  readChar(checksum_url, nchars = 128)
-  )) {
+                 )
+      ) {
     file_delete(maven_path)
     stop("Maven installation failed. Unable to verify checksum.")
   }
@@ -52,8 +52,8 @@ install_maven <- function(dir = NULL, version = NULL) {
   status <- utils::untar(maven_path, compressed = "gzip",
                          exdir = maven_dir)
   if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
-  file_delete(maven_path)
   
+  file_delete(maven_path)
   .globals$maven_dir <- maven_dir
   message("Maven installation succeeded.")
   invisible(NULL)
@@ -97,5 +97,5 @@ resolve_maven_path <- function() {
 }
 
 maven_found <- function() {
-  if (length(purrr::safely(resolve_maven_path)()$result)) TRUE else FALSE
+  if (length(safely(resolve_maven_path)()$result)) TRUE else FALSE
 }

@@ -4,9 +4,12 @@
     list.files(resolve_mleap_path(), full.names = TRUE),
     error = function(e) ""
   )
+  .jpackage(pkgname, lib.loc = libname, morePaths = jar_paths)
 }
 
-mleap_dep_versions <- function(spark_version = NULL, scala_version = NULL) {
+mleap_dep_versions <- function(spark_version = NULL, scala_version = NULL, 
+                               mleap_version = NULL
+                               ) {
   ver <- list(
     list(spark = "2.0.0", scala = "2.11", mleap = "0.10.3"),
     list(spark = "2.1.0", scala = "2.11", mleap = "0.11.0"),
@@ -28,9 +31,7 @@ mleap_dep_versions <- function(spark_version = NULL, scala_version = NULL) {
     }
   )
   
-  if(is.null(spark_version)) {
-    prep_ver
-  } else {
+  if(!is.null(spark_version)) {
     ver_scala_lgl <- map_lgl(prep_ver, ~.x$scala == scala_version)
     ver_scala <- prep_ver[ver_scala_lgl]
     spark_major <- substr(spark_version, 1, 3)
@@ -38,8 +39,16 @@ mleap_dep_versions <- function(spark_version = NULL, scala_version = NULL) {
     if(sum(ver_spark_lgl) > 1) {
       stop("More than one MLeap version matches the Spark and Scala versions")
     }  
-    ver_scala[ver_spark_lgl][[1]]
+    return(ver_scala[ver_spark_lgl][[1]])
   }
+  
+  if(!is.null(mleap_version)) {
+    ver_mleap_lgl <- map_lgl(prep_ver, ~.x$mleap == mleap_version)
+    ver_mleap <- prep_ver[ver_mleap_lgl]
+    return(head(ver_mleap, 1))
+  }
+    
+  prep_ver
 }
 spark_dependencies <- function(spark_version, scala_version, ...) {
   

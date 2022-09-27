@@ -26,7 +26,7 @@ for(i in seq_along(versions)) {
   if(!dir_exists(version_folder)) {
     cat(paste0("Populating: ", version_folder, "\n"))
     dir_create(version_folder)
-    download_jars(resolve_maven_path(), 
+    maven_download_jars(resolve_maven_path(), 
                   maven_path, 
                   version_folder, 
                   use_temp_cache = TRUE

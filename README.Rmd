@@ -17,8 +17,9 @@ knitr::opts_chunk$set(
 
 Sys.setenv("JAVA_HOME" = "/Library/Java/JavaVirtualMachines/jdk-18.0.1.1.jdk/Contents/Home")
 rJava::.jinit() 
-library(mleap)
-
+#library(mleap)
+devtools::load_all()
+library(tibble)
 
 Sys.setenv("JAVA_HOME" = "/usr/local/java")
 
@@ -53,67 +54,90 @@ install_mleap()
 
 ```
 
-
-We can now export Spark ML pipelines from sparklyr.
-
-```{r, message = FALSE}
+```{r}
 library(sparklyr)
-sc <- spark_connect("local", version = "3.2")
+library(modeldata)
 
-mtcars_tbl <- copy_to(sc, mtcars)
+data("small_fine_foods")
 
-# Create a pipeline and fit it
-pipeline <- ml_pipeline(sc) %>%
-  ft_binarizer("hp", "big_hp", threshold = 100) %>%
-  ft_vector_assembler(c("big_hp", "wt", "qsec"), "features") %>%
-  ml_gbt_regressor(label_col = "mpg")
+sc <- spark_connect(master = "local", version = "3.2")
 
-pipeline_model <- ml_fit(pipeline, mtcars_tbl)
+sff_training_data <- copy_to(sc, training_data)
 
-# Export model
-model_path <- file.path("mtcars_model.zip")
+sff_testing_data <- copy_to(sc, testing_data)
+```
 
-preds <- ml_transform(pipeline_model, mtcars_tbl)
 
-ml_write_bundle(
-  x = pipeline_model,  
-  sample_input = mtcars_tbl, 
-  path = model_path, 
+```{r}
+sff_pipeline <- ml_pipeline(sc) %>% 
+  ft_string_indexer(
+    input_col = "score",
+    output_col = "label",
+    handle_invalid = "keep",
+    string_order_type = "alphabetAsc"
+  ) %>% 
+  ft_tokenizer(
+    input_col = "review",
+    output_col = "word_list"
+  ) %>% 
+  ft_stop_words_remover(
+    input_col = "word_list", 
+    output_col = "wo_stop_words"
+    ) %>% 
+  ft_hashing_tf(
+    input_col = "wo_stop_words", 
+    output_col = "hashed_features", 
+    binary = TRUE, 
+    num_features = 4096
+    ) %>%
+  ft_normalizer(
+    input_col = "hashed_features", 
+    output_col = "normal_features"
+    ) %>% 
+  ft_vector_assembler(
+    input_cols = "normal_features",
+    output_col = "features"
+  ) %>% 
+  ml_logistic_regression(elastic_net_param = 0.05, reg_param = 0.25  )  
+
+sff_pipeline_model <- ml_fit(sff_pipeline, sff_training_data)
+
+sff_test_predictions <- sff_pipeline_model %>% 
+  ml_transform(sff_testing_data) 
+
+ml_metrics_binary(sff_test_predictions, truth = label, estimate = prediction)
+```
+
+
+```{r}
+ml_write_to_bundle_transformed(
+  x = sff_pipeline_model,  
+  transformed_dataset = sff_test_predictions,  
+  path = "sff.zip", 
   overwrite = TRUE
   )
 
-
-
-# Disconnect from Spark
-spark_disconnect(sc)
+spark_disconnect(sc) 
 ```
 
-At this point, we can share `mtcars_model.zip` with our deployment/implementation engineers, and they would be able to embed the model in another application. See the [MLeap docs](http://mleap-docs.combust.ml/) for details.
-
-We also provide R functions for testing that the saved models behave as expected. Here we load the previously saved model:
+## MLeap Bundle (without Spark dependency)
 
 ```{r}
-model <- mleap_load_bundle(model_path)
-model
+sff_mleap_model <- mleap_load_bundle("sff.zip")
+sff_mleap_model
 ```
-
-We can retrieve the schema associated with the model:
 
 ```{r}
-mleap_model_schema(model)
+mleap_model_schema(sff_mleap_model)
 ```
-
-Then, we create a new data frame to be scored, and make predictions using our model:
+```{r}
+tibble(review = "worst bad thing I will never buy again", score = "") %>% 
+  mleap_transform(sff_mleap_model, .) %>% 
+  dplyr::glimpse()
+```
 
 ```{r}
-newdata <- tibble::tribble(
-  ~qsec, ~hp, ~wt,
-  16.2,  101, 2.68,
-  18.1,  99,  3.08
-)
-
-# Transform the data frame
-transformed_df <- mleap_transform(model, newdata)
-dplyr::glimpse(transformed_df)
+tibble(review = "I really loved the proudct best product", score = "") %>% 
+  mleap_transform(sff_mleap_model, .) %>% 
+  dplyr::glimpse()
 ```
-

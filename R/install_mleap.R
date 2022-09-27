@@ -19,26 +19,35 @@ install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
     return(invisible(NULL))
   }
   
+  version_deps <- mleap_dep_versions(mleap_version = version)
+  
   mvn <- resolve_maven_path()
+  
   if (!length(mvn)) stop("MLeap installation failed. Maven must be installed.")
   
-  mleap_dir <- if (!is.null(dir)) {
-    normalizePath(
-      file.path(dir, paste0("mleap-", version)), 
+  
+  mleap_folder <- paste0("mleap-", version)
+  
+  if (!is.null(dir)) {
+    mleap_dir <- normalizePath(
+      file.path(dir, mleap_folder), 
       mustWork = FALSE
     )
   } else {
-    install_dir(paste0("mleap/mleap-", version))
+    mleap_dir <- install_dir(path("mleap", mleap_folder))
   }
   
-  if (!dir_exists(mleap_dir))
-    dir_create(mleap_dir, recurse = TRUE)
+  if (!dir_exists(mleap_dir)) dir_create(mleap_dir, recurse = TRUE)
   
   message("Downloading MLeap Runtime ", version, "...")
   
   tryCatch(
-    download_jars(mvn, paste0("ml.combust.mleap:mleap-runtime_2.12:", version), mleap_dir,
-                  use_temp_cache = use_temp_cache),
+    maven_download_jars(
+      mvn, 
+      version_deps$maven, 
+      mleap_dir,
+      use_temp_cache = use_temp_cache
+      ),
     error = function(e) {dir_delete(mleap_dir); stop(e)}
   )
   
@@ -47,6 +56,7 @@ install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
   load_mleap_jars(version)
   
   message("MLeap Runtime version ", version, " installation succeeded.")
+  
   invisible(NULL)
 }
 
@@ -98,9 +108,7 @@ mleap_found <- function(version = NULL) {
   if (length(safely(resolve_mleap_path)(version)$result)) TRUE else FALSE
 }
 
-
-
-download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
+maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
   temp_dir <- tempdir()
   
   maven_local_repo <- if (use_temp_cache) {
