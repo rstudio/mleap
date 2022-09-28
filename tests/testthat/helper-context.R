@@ -69,26 +69,6 @@ using_livy <- function() {
   lt
 }
 
-using_arrow_version <- function() {
-  lv <- Sys.getenv("ARROW_VERSION")
-  testthat_context$spark$arrow$version <- lv
-  lv
-}
-
-using_arrow_devel <- function() {
-  if(using_arrow_version() == "devel") {
-    TRUE
-  } else {
-    FALSE
-  }
-}
-
-using_arrow <- function() {
-  lt <- FALSE
-  if(using_arrow_version() != "") lt <- TRUE
-  lt
-}
-
 using_databricks <- function() {
   dcs <- FALSE
   dc <- Sys.getenv("TEST_DATABRICKS_CONNECT")

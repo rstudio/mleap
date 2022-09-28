@@ -12,9 +12,6 @@ testthat_init <- function() {
   options(livy.session.start.timeout = 300)
   suppressPackageStartupMessages(library(sparklyr))
   suppressPackageStartupMessages(library(dplyr))
-  if (using_arrow()) {
-    suppressPackageStartupMessages(library(arrow))
-  }
 }
 
 testthat_spark_connection <- function() {

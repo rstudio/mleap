@@ -38,5 +38,6 @@ Suggests:
     testthat (>= 3.0.0),
     ggplot2,
     dplyr,
-    covr
+    covr,
+    withr
 Config/testthat/edition: 3
