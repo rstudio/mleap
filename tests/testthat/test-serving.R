@@ -1,8 +1,7 @@
 test_that("We can export and use pipeline model", {
-  skip_on_cran()
+  
   sc <- testthat_spark_connection()
 
-  library(sparklyr)
   mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
 
   pipeline <- ml_pipeline(sc) %>%
@@ -12,8 +11,8 @@ test_that("We can export and use pipeline model", {
 
   pipeline_model <- ml_fit(pipeline, mtcars_tbl)
 
-  # export model
   model_path <- file.path(tempdir(), "mtcars_model.zip")
+  
   expect_message(
     ml_write_bundle(pipeline_model,
       mtcars_tbl,
@@ -37,10 +36,8 @@ test_that("We can export and use pipeline model", {
   model <- mleap_load_bundle(model_path)
 
   # check model schema
-  expect_known_output(
-    mleap_model_schema(model),
-    output_file("mtcars_model_schema.txt"),
-    print = TRUE
+  expect_snapshot(
+    mleap_model_schema(model)
   )
 
   newdata <- tibble::tribble(
@@ -59,22 +56,25 @@ test_that("We can export and use pipeline model", {
 })
 
 test_that("We can export a list of transformers", {
-  skip_on_cran()
   sc <- testthat_spark_connection()
 
-  library(sparklyr)
   iris_tbl <- copy_to(sc, iris, overwrite = TRUE)
+
   string_indexer <- ft_string_indexer(sc, "Species", "label") %>%
     ml_fit(iris_tbl)
+  
   pipeline <- ml_pipeline(string_indexer) %>%
     ft_vector_assembler(c("Petal_Width", "Petal_Length"), "features") %>%
     ml_logistic_regression() %>%
     ft_index_to_string("prediction", "predicted_label",
       labels = ml_labels(string_indexer)
     )
+  
   pipeline_model <- ml_fit(pipeline, iris_tbl)
+  
   stages <- pipeline_model %>%
     ml_stages(c("vector_assembler", "logistic", "index_to_string"))
+  
   model_path <- file.path(tempdir(), "iris_model.zip")
 
   expect_message(
@@ -85,10 +85,8 @@ test_that("We can export a list of transformers", {
   # load model
   model <- mleap_load_bundle(model_path)
 
-  expect_known_output(
-    mleap_model_schema(model),
-    output_file("iris_model_schema.txt"),
-    print = TRUE
+  expect_snapshot(
+    mleap_model_schema(model)
   )
 
   newdata <- tibble::tribble(
@@ -144,10 +142,12 @@ test_that("mleap_transform() handles heterogenous predictors", {
     ml_fit(diamonds_tbl)
 
   model_path <- file.path(tempdir(), "diamonds_model.zip")
+  
   ml_write_bundle(
     pipeline_model,
     diamonds_tbl,
-    model_path
+    model_path,
+    overwrite = TRUE
   )
 
   mleap_model <- mleap_load_bundle(model_path)

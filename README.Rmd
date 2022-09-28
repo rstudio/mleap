@@ -71,6 +71,18 @@ sff_training_data <- copy_to(sc, training_data)
 sff_testing_data <- copy_to(sc, testing_data)
 ```
 
+```{r}
+sff_training_data %>% 
+  ft_string_indexer(
+    input_col = "score",
+    output_col = "label",
+    handle_invalid = "keep",
+    string_order_type = "alphabetAsc"
+  ) %>% 
+  select(score, label) %>% 
+  dplyr::count(score, label)
+```
+
 
 ```{r}
 sff_pipeline <- ml_pipeline(sc) %>% 
@@ -78,7 +90,7 @@ sff_pipeline <- ml_pipeline(sc) %>%
     input_col = "score",
     output_col = "label",
     handle_invalid = "keep",
-    string_order_type = "alphabetAsc"
+    string_order_type = "alphabetDesc"
   ) %>% 
   ft_tokenizer(
     input_col = "review",
@@ -96,12 +108,8 @@ sff_pipeline <- ml_pipeline(sc) %>%
     ) %>%
   ft_normalizer(
     input_col = "hashed_features", 
-    output_col = "normal_features"
-    ) %>% 
-  ft_vector_assembler(
-    input_cols = "normal_features",
     output_col = "features"
-  ) %>% 
+    ) %>% 
   ml_logistic_regression(elastic_net_param = 0.05, reg_param = 0.25)  
 
 sff_pipeline_model <- ml_fit(sff_pipeline, sff_training_data)
@@ -127,13 +135,15 @@ spark_disconnect(sc)
 ## MLeap Bundle (without Spark dependency)
 
 ```{r}
-sff_mleap_model <- mleap_load_bundle("sff.zip")
+sff_mleap_model <- mleap_load_bundle("inst/app/sff.zip")
 sff_mleap_model
 ```
 
 ```{r}
-mleap_model_schema(sff_mleap_model)
+str(sff_mleap_model)
 ```
+
+
 ```{r}
 tibble(review = "worst bad thing I will never buy again", score = "") %>% 
   mleap_transform(sff_mleap_model, .) %>% 

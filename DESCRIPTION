@@ -20,7 +20,7 @@ Description: A 'sparklyr' <https://spark.rstudio.com> extension that provides
 URL: https://github.com/rstudio/mleap
 BugReports: https://github.com/rstudio/mleap/issues
 License: Apache License (>= 2.0)
-SystemRequirements: Apache Spark 2.0+, Apache Maven 3.5+, Java JDK 8, MLeap Runtime 0.10.1+
+SystemRequirements: Apache Maven 3.5+, Java JDK 8, MLeap Runtime 0.10.1+
 Encoding: UTF-8
 StagedInstall: no
 Depends:
@@ -35,7 +35,8 @@ Imports:
   fs
 RoxygenNote: 7.2.1
 Suggests: 
-    testthat,
+    testthat (>= 3.0.0),
     ggplot2,
     dplyr,
     covr
+Config/testthat/edition: 3
