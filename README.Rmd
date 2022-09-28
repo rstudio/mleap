@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
   comment = "",
   fig.path = "man/figures/README-",
   out.width = "100%",
-  eval = TRUE
+  eval = FALSE
 )
 
 Sys.setenv("JAVA_HOME" = "/Library/Java/JavaVirtualMachines/jdk-18.0.1.1.jdk/Contents/Home")
@@ -25,10 +25,12 @@ Sys.setenv("JAVA_HOME" = "/usr/local/java")
 
 ```
 
-[![Travis build status](https://travis-ci.org/rstudio/mleap.svg?branch=master)](https://travis-ci.org/rstudio/mleap) [![Coverage status](https://codecov.io/gh/rstudio/mleap/branch/master/graph/badge.svg)](https://codecov.io/github/rstudio/mleap?branch=master) [![CRAN status](https://www.r-pkg.org/badges/version/mleap)](https://cran.r-project.org/package=mleap)
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/rstudio/mleap/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/rstudio/mleap/actions/workflows/R-CMD-check.yaml)
+[![Coverage status](https://codecov.io/gh/rstudio/mleap/branch/master/graph/badge.svg)](https://codecov.io/github/rstudio/mleap?branch=master) [![CRAN status](https://www.r-pkg.org/badges/version/mleap)](https://cran.r-project.org/package=mleap)
 
 **mleap** is a [sparklyr](http://spark.rstudio.com/) extension that provides an interface to [MLeap](https://github.com/combust/mleap), which allows us to take Spark pipelines to production.
-
+<!-- badges: end -->
 ## Getting started
 
 **mleap** can be installed from CRAN via
