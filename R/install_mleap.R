@@ -14,12 +14,12 @@
 install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
   version <- version %||% .globals$default_mleap_version
 
-  if (mleap_found(version)) {
+  if (mleap_found(version = version, path = dir)) {
     message("MLeap Runtime version ", version, " already installed.")
     return(invisible(NULL))
   }
 
-  version_deps <- mleap_dep_versions_list(mleap_version = version)
+  version_deps <- mleap_dep_versions_list(mleap_version = version)[[1]]
 
   mvn <- resolve_maven_path()
 
@@ -113,8 +113,12 @@ resolve_mleap_path <- function(version = NULL) {
   mleap_dir
 }
 
-mleap_found <- function(version = NULL) {
-  if (length(safely(resolve_mleap_path)(version)$result)) TRUE else FALSE
+mleap_found <- function(version = NULL, path = NULL) {
+  if(!is.null(path)) {
+    dir_exists(path)
+  } else {
+    if (length(safely(resolve_mleap_path)(version)$result)) TRUE else FALSE
+  }
 }
 
 maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {

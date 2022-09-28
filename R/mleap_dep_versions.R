@@ -2,7 +2,7 @@
 #' @export
 mleap_dep_versions_table <- function() {
   mleap_dep_versions_list() %>%
-    map(~ as.tibble(.x)) %>%
+    map(~ as_tibble(.x)) %>%
     reduce(function(x, y) rbind(x, y))
 }
 
@@ -36,6 +36,9 @@ mleap_dep_versions_list <- function(spark_version = NULL, scala_version = NULL,
     ver_spark_lgl <- map_lgl(ver_scala, ~ .x$spark_major == spark_major)
     if (sum(ver_spark_lgl) > 1) {
       stop("More than one MLeap version matches the Spark and Scala versions")
+    }
+    if (sum(ver_spark_lgl) == 0) {
+      stop(paste0("No MLeap JAR matched the requested Spark ", spark_major, " version"))
     }
     return(ver_scala[ver_spark_lgl][[1]])
   }

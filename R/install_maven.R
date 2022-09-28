@@ -13,7 +13,7 @@
 #'
 #' @export
 install_maven <- function(dir = NULL, version = NULL) {
-  if (maven_found()) {
+  if (maven_found(path = dir)) {
     message("Maven already installed.")
     return(invisible(NULL))
   }
@@ -52,10 +52,8 @@ install_maven <- function(dir = NULL, version = NULL) {
     stop("Maven installation failed. Unable to verify checksum.")
   }
 
-  status <- untar(maven_path,
-    compressed = "gzip",
-    exdir = maven_dir
-  )
+  status <- untar(maven_path, exdir = maven_dir)
+  
   if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
 
   file_delete(maven_path)
@@ -103,6 +101,10 @@ resolve_maven_path <- function() {
   maven_path
 }
 
-maven_found <- function() {
-  if (length(safely(resolve_maven_path)()$result)) TRUE else FALSE
+maven_found <- function(path = NULL) {
+  if(!is.null(path)) {
+    dir_exists(path)
+  } else {
+    if (length(safely(resolve_maven_path)()$result)) TRUE else FALSE  
+  }
 }

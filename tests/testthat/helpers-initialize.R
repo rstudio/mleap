@@ -60,6 +60,11 @@ testthat_shell_connection <- function(method = "shell") {
     packages <- NULL
     if (spark_version >= "2.4.0") packages <- "avro"
     if (spark_version >= "2.4.2") packages <- c(packages, "delta")
+
+    sparklyr_java_home <- Sys.getenv("SPARKLYR_JAVA_HOME")
+    old_java_home <- Sys.getenv("JAVA_HOME")
+    
+    if(!is.null(sparklyr_java_home)) Sys.setenv(JAVA_HOME = sparklyr_java_home)
     
     sc <- spark_connect(
       master = "local",
@@ -68,6 +73,8 @@ testthat_shell_connection <- function(method = "shell") {
       config = config,
       packages = packages
     )
+    
+    Sys.setenv(JAVA_HOME = old_java_home)
     
     testthat_spark_connection_object(sc)
   }

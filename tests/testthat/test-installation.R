@@ -1,6 +1,5 @@
 test_that("install_maven() works", {
-  skip_on_cran()
-  if (mleap:::maven_found()) skip("Maven already installed.")
+  if(dir_exists(maven_dir)) dir_delete(maven_dir)
   expect_message(
     install_maven(dir = maven_dir),
     "Maven installation succeeded\\."
@@ -8,7 +7,6 @@ test_that("install_maven() works", {
 })
 
 test_that("install_maven() detects existing installation", {
-  skip_on_cran()
   expect_message(
     install_maven(dir = maven_dir),
     "Maven already installed\\."
@@ -16,8 +14,7 @@ test_that("install_maven() detects existing installation", {
 })
 
 test_that("install_mleap() works", {
-  skip_on_cran()
-  if (mleap:::mleap_found(.globals$default_mleap_version)) skip("MLeap already installed")
+  if(dir_exists(mleap_dir)) dir_delete(mleap_dir)
   expect_message(
     install_mleap(dir = mleap_dir),
     paste0(
@@ -29,7 +26,6 @@ test_that("install_mleap() works", {
 })
 
 test_that("install_mleap() detects existing installation", {
-  skip_on_cran()
   expect_message(
     install_mleap(dir = mleap_dir),
     paste0(
