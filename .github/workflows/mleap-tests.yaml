@@ -34,6 +34,10 @@ jobs:
           use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache-version: 2
+          extra-packages: |
+            any::devtools        
 
       - name: Cache Spark
         id: cache-spark
