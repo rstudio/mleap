@@ -27,6 +27,7 @@ Sys.setenv("JAVA_HOME" = "/usr/local/java")
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/rstudio/mleap/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/rstudio/mleap/actions/workflows/R-CMD-check.yaml)
+[![MLeap-Tests](https://github.com/rstudio/mleap/actions/workflows/mleap-tests.yaml/badge.svg)](https://github.com/rstudio/mleap/actions/workflows/mleap-tests.yaml)
 [![Coverage status](https://codecov.io/gh/rstudio/mleap/branch/master/graph/badge.svg)](https://codecov.io/github/rstudio/mleap?branch=master) [![CRAN status](https://www.r-pkg.org/badges/version/mleap)](https://cran.r-project.org/package=mleap)
 
 **mleap** is a [sparklyr](http://spark.rstudio.com/) extension that provides an interface to [MLeap](https://github.com/combust/mleap), which allows us to take Spark pipelines to production.
