@@ -1,0 +1,98 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/master/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+name: Spark-Tests
+
+jobs:
+  Spark-Tests:
+    runs-on: ubuntu-latest
+
+    name: ${{ matrix.config.spark }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {spark: '2.4.0'}
+  
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      SPARK_VERSION:  ${{ matrix.config.spark }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::devtools
+            any: sparklyr
+
+      - name: Cache Spark
+        id: cache-spark
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/spark/spark-${{ matrix.config.spark }}-bin-hadoop${{ matrix.config.hadoop }}
+          key: sparklyr-spark-${{ matrix.config.spark }}-bin-hadoop${{ matrix.config.hadoop }}-3
+
+      - name: Install Spark (via sparklyr)
+        if: steps.cache-spark.outputs.cache-hit != 'true'
+        run: |
+          sparklyr::spark_install(version = Sys.getenv("SPARK_VERSION"))
+        shell: Rscript {0}
+
+      - name: Cache Scala
+        id: cache-scala
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/scala/
+          key: scala-2
+
+      - name: Install Scala (via sparklyr)
+        if: steps.cache-scala.outputs.cache-hit != 'true'
+        run: |
+          sparklyr::download_scalac()
+        shell: Rscript {0}
+
+      - name: Cache Maven
+        id: cache-maven
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/maven/
+          key: maven-2
+
+      - name: Install Maven (via mleap)
+        if: steps.cache-maven.outputs.cache-hit != 'true'
+        run: |
+          devtools::load_all()
+          install_maven()
+        shell: Rscript {0}
+
+      - name: R Session Info
+        run: sessionInfo()
+        shell: Rscript {0}
+
+      - name: R Environment Variables
+        run: Sys.getenv()
+        shell: Rscript {0}
+
+
+      - name: R Tests
+        run: |
+          devtools::load_all()
+          spark_major <- as.numeric(substr(Sys.getenv("SPARK_VERSION"), 1, 1))
+          if(spark_major < 3) Sys.setenv("JAVA_HOME" = Sys.getenv("JAVA_HOME_8_X64"))
+          Sys.getenv("JAVA_HOME")
+          devtools::test(filter = "serving")
+        shell: Rscript {0}
