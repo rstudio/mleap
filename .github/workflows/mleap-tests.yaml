@@ -19,6 +19,7 @@ jobs:
       matrix:
         config:
           - {spark: '3.2.0', hadoop: '3.2', mleap: '0.20.0'}
+          - {spark: '2.4.0', hadoop: '2.7', mleap: '0.15.0'}
   
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
