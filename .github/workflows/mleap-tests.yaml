@@ -40,6 +40,13 @@ jobs:
           extra-packages: |
             any::devtools        
 
+      - name: Java Home set
+        run: |
+          spark_major <- as.numeric(substr(Sys.getenv("SPARK_VERSION"), 1, 1))
+          if(spark_major < 3) Sys.setenv("JAVA_HOME" = Sys.getenv("JAVA_HOME_8_X64"))
+          Sys.getenv("JAVA_HOME")
+        shell: Rscript {0}
+
       - name: Cache Spark
         id: cache-spark
         uses: actions/cache@v2
@@ -105,9 +112,6 @@ jobs:
 
       - name: R Tests
         run: |
-          spark_major <- as.numeric(substr(Sys.getenv("SPARK_VERSION"), 1, 1))
-          if(spark_major < 3) Sys.setenv("JAVA_HOME" = Sys.getenv("JAVA_HOME_8_X64"))
-          Sys.getenv("JAVA_HOME")
           devtools::load_all()
           devtools::test(filter = "serving")
         shell: Rscript {0}
