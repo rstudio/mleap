@@ -1,3 +1,5 @@
+skip_install_tests()
+
 test_that("install_maven() works", {
   if(dir_exists(maven_dir)) dir_delete(maven_dir)
   expect_message(

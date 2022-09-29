@@ -12,19 +12,19 @@ jobs:
   MLeap-Tests:
     runs-on: ubuntu-latest
 
-    name: Spark ${{ matrix.config.spark }}
+    name: Spark ${{ matrix.config.spark }} | MLeap ${{ matrix.config.mleap }}
 
     strategy:
       fail-fast: false
       matrix:
         config:
-          - {spark: '3.2.0', hadoop: '3.2'}
+          - {spark: '3.2.0', hadoop: '3.2', mleap: '0.20.0'}
   
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
       SPARK_VERSION:  ${{ matrix.config.spark }}
-
+      MLEAP_VERSION:  ${{ matrix.config.mleap }}
     steps:
       - uses: actions/checkout@v2
 
@@ -79,6 +79,20 @@ jobs:
           devtools::load_all()
           install_maven()
         shell: Rscript {0}
+        
+      - name: Cache MLeap
+        id: cache-mleap
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/mleap/mleap-${{ matrix.config.mleap }}
+          key: mleap-2
+
+      - name: Install MLeap (via mleap)
+        if: steps.cache-mleap.outputs.cache-hit != 'true'
+        run: |
+          devtools::load_all()
+          install_mleap(version = Sys.getenv("MLEAP_VERSION"))
+        shell: Rscript {0}        
 
       - name: R Session Info
         run: sessionInfo()
@@ -87,7 +101,6 @@ jobs:
       - name: R Environment Variables
         run: Sys.getenv()
         shell: Rscript {0}
-
 
       - name: R Tests
         run: |

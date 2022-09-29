@@ -55,6 +55,15 @@ testthat_spark_env_version <- function(set_to = NULL) {
   if(is.null(set_to)) sv
 }
 
+skip_install_tests <- function() {
+  ret <- FALSE
+  si <- Sys.getenv("RUN_INSTALL_TESTS", unset = FALSE)
+  ret <- si
+  msg <- "Installation tests will be skipped. Set environment variable 'RUN_INSTALL_TESTS'to TRUE if you with to run them"
+  if(ret == FALSE) skip(message = msg)
+  invisible()
+}
+
 ## ----------------------------- Using -----------------------------------------
 
 using_livy_version <- function() {
