@@ -6,13 +6,13 @@ on:
   pull_request:
     branches: main
 
-name: Spark-Tests
+name: MLeap-Tests
 
 jobs:
-  Spark-Tests:
+  MLeap-Tests:
     runs-on: ubuntu-latest
 
-    name: ${{ matrix.config.spark }}
+    name: Spark ${{ matrix.config.spark }}
 
     strategy:
       fail-fast: false
@@ -34,10 +34,6 @@ jobs:
           use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: |
-            any::devtools
-            any: sparklyr
 
       - name: Cache Spark
         id: cache-spark
