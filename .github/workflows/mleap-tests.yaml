@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {spark: '2.4.0', hadoop: '2.7'}
+          - {spark: '3.2.0', hadoop: '3.2'}
   
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
