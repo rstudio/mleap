@@ -111,6 +111,7 @@ jobs:
 
       - name: R Tests
         run: |
-          devtools::load_all()
-          devtools::test(filter = "serving")
+          Sys.setenv("SPARKLYR_JAVA_HOME" = Sys.getenv("JAVA_HOME_8_X64"))
+          Sys.getenv("SPARKLYR_JAVA_HOME")        
+          devtools::test()
         shell: Rscript {0}
