@@ -1,5 +1,5 @@
 ```{mermaid}
-%%| fig-width: 8.5
+%%| fig-width: 5
 flowchart LR
   subgraph id1 [ Spark session ]
   subgraph id2 [ ]
@@ -23,7 +23,7 @@ flowchart LR
 
 
 ```{mermaid}
-%%| fig-width: 6
+%%| fig-width: 4
 flowchart LR
   subgraph id1 ["Non-Spark Environment with MLeap installed"]
   subgraph id2 [ ]

@@ -8,3 +8,4 @@ derby.log
 .DS_Store
 spark-warehouse
 mtcars_model.zip
+sff.zip
