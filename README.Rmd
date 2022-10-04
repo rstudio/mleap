@@ -51,9 +51,7 @@ toc <- function() {
 [![Coverage status](https://codecov.io/gh/rstudio/mleap/branch/master/graph/badge.svg)](https://codecov.io/github/rstudio/mleap?branch=master) [![CRAN status](https://www.r-pkg.org/badges/version/mleap)](https://cran.r-project.org/package=mleap)
 <!-- badges: end -->
 
-## Intro
-
-### What is MLeap?
+## What is MLeap?
 
 [MLeap](https://github.com/combust/mleap) allows us to take Spark pipelines to production. The MLeap runtime can recreate most of Spark's feature transformers 
 and model predictions. This allows for the ML Pipeline to be **deployed with no
@@ -69,7 +67,33 @@ predictions (see Figure 2).
 
 ![Figure 2 - Deploy with MLeap](man/readme/mleap-predict.png)
 
-### The `mleap` package
+### Known limitations
+
+MLeap translates the feature transformer and models into its own code base.  Not
+everything available in Spark is translated. 
+
+This means two layering things:
+
+1. No `dplyr` transformation is available. Only models and feature transformers are
+available. In `sparklyr`, feature transformers are functions that start with `ft_`.
+
+1. Not every Spark Feature Transformer and model are supported. Please refer to 
+the MLeap documentation to see a concise view of what is available: [MLeap Supported Transformers & Models](https://combust.github.io/mleap-docs/core-concepts/transformers/support.html).
+
+Most notably, the following three transformers are not supported:
+
+- `ft_dplyr_transformer()`
+- `ft_sql_transformer()`
+- `ft_r_formula()`
+
+There is a **workaround for `ft_r_formula()`**. It involves using the ML Pipeline
+"way" of setting up the outcome and predictors.  For the predictors, use `ft_vector_assembler()` if the final stage of the predictors is not a single 
+vectorized variable.  For outcomes, anything numeric 
+works fine, but anything categorical will not. Use `ft_string_indexer()` on top 
+of the outcome variable, before passing it to the modeling step (See the Example 
+section).
+
+## The `mleap` package
 
 The goal of the `mleap` package is twofold:
 
