@@ -2,17 +2,17 @@
 title: "R interface for MLeap"
 output:
   github_document:
-    fig_width: 9
+    fig_width: 7
     fig_height: 5
 ---
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "",
-  fig.path = "man/figures/README-",
+  comment = "#>",
   out.width = "100%",
-  eval = FALSE
+  fig.align='center',
+  eval = TRUE
 )
 
 Sys.setenv("JAVA_HOME" = "/Library/Java/JavaVirtualMachines/jdk-18.0.1.1.jdk/Contents/Home")
@@ -29,18 +29,44 @@ Sys.setenv("JAVA_HOME" = "/usr/local/java")
 [![R-CMD-check](https://github.com/rstudio/mleap/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/rstudio/mleap/actions/workflows/R-CMD-check.yaml)
 [![MLeap-Tests](https://github.com/rstudio/mleap/actions/workflows/mleap-tests.yaml/badge.svg)](https://github.com/rstudio/mleap/actions/workflows/mleap-tests.yaml)
 [![Coverage status](https://codecov.io/gh/rstudio/mleap/branch/master/graph/badge.svg)](https://codecov.io/github/rstudio/mleap?branch=master) [![CRAN status](https://www.r-pkg.org/badges/version/mleap)](https://cran.r-project.org/package=mleap)
-
-**mleap** is a [sparklyr](http://spark.rstudio.com/) extension that provides an interface to [MLeap](https://github.com/combust/mleap), which allows us to take Spark pipelines to production.
 <!-- badges: end -->
+
+## Intro
+
+### MLeap
+
+[MLeap](https://github.com/combust/mleap) allows us to take Spark pipelines to production. The MLeap runtime can recreate most of Spark's feature transformers 
+and model predictions. This allows for the ML Pipeline to be **deployed with no
+Spark dependencies**. 
+
+![Figure 1 - Train in Spark](man/readme/mleap-fit.png){width=80%}
+
+In practice, we can save the ML Pipeline Model (fitted model) as an MLeap bundle 
+(see Figure 1). MLeap serializes the pipeline steps and model.  The resulting Zip 
+file can  then be used in an external environment that has MLeap. Once the MLeap 
+bundle is loaded in the new environment, new data can be passed to obtain 
+predictions (see Figure 2).
+
+![Figure 2 - Deploy with MLeap](man/readme/mleap-predict.png){width=50%}
+
+### `mleap` package
+
+The goal of the `mleap` package is twofold:
+
+1. Convert an ML Pipeline Model created in `sparklyr`, into an MLeap bundle file
+
+1. Load an MLeap bundle file into an R session (without Spark), and to use the
+loaded bundle to run predictions (transformations)
+
 ## Getting started
 
-**mleap** can be installed from CRAN via
+**mleap** can be installed from CRAN via:
 
 ```{r eval = FALSE}
 install.packages("mleap")
 ```
 
-or, for the latest development version from GitHub, using
+or, for the latest development version from GitHub, using:
 
 ```{r eval = FALSE}
 devtools::install_github("rstudio/mleap")
@@ -48,15 +74,19 @@ devtools::install_github("rstudio/mleap")
 
 ## Install Maven and MLeap
 
-Once mleap has been installed, we can install the external dependencies using
+Once `mleap` has been installed, we can install the external dependencies using
 
 ```{r eval = FALSE}
 library(mleap)
-install_maven()
-# Alternatively, if you already have Maven installed, you can 
-#  set options(maven.home = "path/to/maven")
-install_mleap()
 
+install_maven()
+```
+
+Alternatively, if you already have Maven installed, you can let `mleap` know by
+setting an R option: `options(maven.home = "path/to/maven")`
+
+```{r eval = FALSE}
+install_mleap()
 ```
 
 ## Example

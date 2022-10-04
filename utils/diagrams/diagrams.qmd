@@ -1,0 +1,43 @@
+```{mermaid}
+%%| fig-width: 8.5
+flowchart LR
+  subgraph id1 [ Spark session ]
+  subgraph id2 [ ]
+    subgraph si [Spark ML Pipeline]
+      ft[Feature Transformers] --> dm[Model] 
+    end
+    td[Training Data] --> si
+    si -- Fit --> fp[Spark ML<br>Pipeline Model]
+    fp -- Save as --> ml[MLeap <br> bundle file]
+  end
+  end
+  
+  style td fill:#ffff99, stroke:#000
+  style dm fill:#ffffff, stroke:#000
+  style ft fill:#ffffff, stroke:#000
+  style id1 fill:#eeeeee,stroke:#eee
+  style id2 fill:#eeeeee,stroke:#eee
+  style fp fill:#ffcc00, stroke:#000
+  style ml fill:#00ff99, stroke:#000
+```
+
+
+```{mermaid}
+%%| fig-width: 6
+flowchart LR
+  subgraph id1 ["Non-Spark Environment with MLeap installed"]
+  subgraph id2 [ ]
+    ml[MLeap<br>bundle file] -- Load --> ev["MLeap"]
+    nd[New Data] -- Load --> ev
+    ev -- Transform --> pd[Predictions]
+  end
+  end
+  
+  style pd  fill:#99ccff, stoke:#000
+  style ev  fill:#66ffcc, stroke:#000
+  style nd  fill:#ffff99, stroke:#000
+  style id1 fill:#eeeeee, stroke:#eee
+  style id2 fill:#eeeeee, stroke:#eee
+  style ml  fill:#00ff99, stroke:#000
+```
+
