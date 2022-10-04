@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   out.width = "100%",
   fig.align='center',
-  eval = FALSE
+  eval = TRUE
 )
 
 Sys.setenv("JAVA_HOME" = "/Library/Java/JavaVirtualMachines/jdk-18.0.1.1.jdk/Contents/Home")
@@ -66,32 +66,6 @@ bundle is loaded in the new environment, new data can be passed to obtain
 predictions (see Figure 2).
 
 ![Figure 2 - Deploy with MLeap](man/readme/mleap-predict.png)
-
-### Known limitations
-
-MLeap translates the feature transformer and models into its own code base.  Not
-everything available in Spark is translated. 
-
-This means two layering things:
-
-1. No `dplyr` transformation is available. Only models and feature transformers are
-available. In `sparklyr`, feature transformers are functions that start with `ft_`.
-
-1. Not every Spark Feature Transformer and model are supported. Please refer to 
-the MLeap documentation to see a concise view of what is available: [MLeap Supported Transformers & Models](https://combust.github.io/mleap-docs/core-concepts/transformers/support.html).
-
-Most notably, the following three transformers are not supported:
-
-- `ft_dplyr_transformer()`
-- `ft_sql_transformer()`
-- `ft_r_formula()`
-
-There is a **workaround for `ft_r_formula()`**. It involves using the ML Pipeline
-"way" of setting up the outcome and predictors.  For the predictors, use `ft_vector_assembler()` if the final stage of the predictors is not a single 
-vectorized variable.  For outcomes, anything numeric 
-works fine, but anything categorical will not. Use `ft_string_indexer()` on top 
-of the outcome variable, before passing it to the modeling step (See the Example 
-section).
 
 ## The `mleap` package
 
@@ -192,6 +166,8 @@ For the example, we will use the *Fine Foods* example data. It contains reviews
 of foods. We will use an ML Pipeline Model to predict if the verbiage in the
 review can tell us if the customer thinks if the product is "great".
 
+### Create the pipeline
+
 1. We will use a local version of Spark, version 3.2:
     ```{r}
     library(sparklyr)
@@ -269,7 +245,7 @@ created with the hold-out test set.
     spark_disconnect(sc) 
     ```
 
-## Loading an MLeap bundle to R (without Spark dependencies)
+### Loading an MLeap bundle to R (without Spark dependencies)
 
 1. We can use the same bundle created in the previous section to load into R. 
 Simply pass the path to the Zip file to `ml_load_bundle()`:
@@ -299,14 +275,29 @@ the expected **input** variables:
       dplyr::glimpse()
     ```
 
-## Shiny app
 
-A very simple Shiny app 
+## Known limitations
 
-```{r, eval = FALSE}
-remotes::install_github("rstudio/mleap", ref = "fixes")
-shiny::runApp(system.file(package = "mleap", "app"))
-```
+MLeap translates the feature transformer and models into its own code base.  Not
+everything available in Spark is translated. 
 
+This means two layering things:
 
+1. No `dplyr` transformation is available. Only models and feature transformers are
+available. In `sparklyr`, feature transformers are functions that start with `ft_`.
 
+1. Not every Spark Feature Transformer and model are supported. Please refer to 
+the MLeap documentation to see a concise view of what is available: [MLeap Supported Transformers & Models](https://combust.github.io/mleap-docs/core-concepts/transformers/support.html).
+
+Most notably, the following three transformers are not supported:
+
+- `ft_dplyr_transformer()`
+- `ft_sql_transformer()`
+- `ft_r_formula()`
+
+There is a **workaround for `ft_r_formula()`**. It involves using the ML Pipeline
+"way" of setting up the outcome and predictors.  For the predictors, use `ft_vector_assembler()` if the final stage of the predictors is not a single 
+vectorized variable.  For outcomes, anything numeric 
+works fine, but anything categorical will not. Use `ft_string_indexer()` on top 
+of the outcome variable, before passing it to the modeling step (See the Example 
+section).

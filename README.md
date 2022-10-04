@@ -29,36 +29,6 @@ environment, new data can be passed to obtain predictions (see Figure
 
 ![Figure 2 - Deploy with MLeap](man/readme/mleap-predict.png)
 
-### Known limitations
-
-MLeap translates the feature transformer and models into its own code
-base. Not everything available in Spark is translated.
-
-This means two layering things:
-
-1.  No `dplyr` transformation is available. Only models and feature
-    transformers are available. In `sparklyr`, feature transformers are
-    functions that start with `ft_`.
-
-2.  Not every Spark Feature Transformer and model are supported. Please
-    refer to the MLeap documentation to see a concise view of what is
-    available: [MLeap Supported Transformers &
-    Models](https://combust.github.io/mleap-docs/core-concepts/transformers/support.html).
-
-Most notably, the following three transformers are not supported:
-
--   `ft_dplyr_transformer()`
--   `ft_sql_transformer()`
--   `ft_r_formula()`
-
-There is a **workaround for `ft_r_formula()`**. It involves using the ML
-Pipeline “way” of setting up the outcome and predictors. For the
-predictors, use `ft_vector_assembler()` if the final stage of the
-predictors is not a single vectorized variable. For outcomes, anything
-numeric works fine, but anything categorical will not. Use
-`ft_string_indexer()` on top of the outcome variable, before passing it
-to the modeling step (See the Example section).
-
 ## The `mleap` package
 
 The goal of the `mleap` package is twofold:
@@ -159,10 +129,17 @@ reviews of foods. We will use an ML Pipeline Model to predict if the
 verbiage in the review can tell us if the customer thinks if the product
 is “great”.
 
+### Create the pipeline
+
 1.  We will use a local version of Spark, version 3.2:
 
     ``` r
     library(sparklyr)
+    #> 
+    #> Attaching package: 'sparklyr'
+    #> The following object is masked from 'package:stats':
+    #> 
+    #>     filter
     library(modeldata)
 
     data("small_fine_foods")
@@ -235,6 +212,7 @@ is “great”.
       path = "sff.zip", 
       overwrite = TRUE
       )
+    #> Model successfully exported.
     ```
 
 6.  We can now close the Spark connection
@@ -243,7 +221,7 @@ is “great”.
     spark_disconnect(sc) 
     ```
 
-## Loading an MLeap bundle to R (without Spark dependencies)
+### Loading an MLeap bundle to R (without Spark dependencies)
 
 1.  We can use the same bundle created in the previous section to load
     into R. Simply pass the path to the Zip file to `ml_load_bundle()`:
@@ -252,6 +230,11 @@ is “great”.
     sff_mleap_model <- mleap_load_bundle("sff.zip")
 
     sff_mleap_model
+    #> MLeap Transformer
+    #> <5cd7ee8f-0bfe-40ce-98c9-0417bd617d0a> 
+    #>   Name: pipeline__f51830f2_fd8c_405c_ba05_1344bce3bddb 
+    #>   Format: json 
+    #>   MLeap Version: 0.20.0
     ```
 
 2.  We can use `mleap_model_schema()` to view more information about the
@@ -259,6 +242,19 @@ is “great”.
 
     ``` r
     mleap_model_schema(sff_mleap_model)
+    #> # A tibble: 10 × 5
+    #>    name            type   nullable dimension io    
+    #>    <chr>           <chr>  <lgl>    <chr>     <chr> 
+    #>  1 review          string FALSE    <NA>      input 
+    #>  2 score           string TRUE     <NA>      input 
+    #>  3 wo_stop_words   string TRUE     <NA>      output
+    #>  4 word_list       string TRUE     <NA>      output
+    #>  5 features        double TRUE     (4096)    output
+    #>  6 label           double FALSE    <NA>      output
+    #>  7 hashed_features double TRUE     (4096)    output
+    #>  8 prediction      double FALSE    <NA>      output
+    #>  9 rawPrediction   double TRUE     (3)       output
+    #> 10 probability     double TRUE     (3)       output
     ```
 
 3.  `mleap_transform()` can process the model and new data. Pass a
@@ -268,19 +264,64 @@ is “great”.
     tibble(review = "worst bad thing I will never buy again", score = "") %>% 
       mleap_transform(sff_mleap_model, .) %>% 
       glimpse()
+    #> Rows: 1
+    #> Columns: 10
+    #> $ review          <chr> "worst bad thing I will never buy again"
+    #> $ score           <chr> ""
+    #> $ label           <dbl> 2
+    #> $ word_list       <list> ["worst", "bad", "thing", "i", "will", "never", "buy",…
+    #> $ wo_stop_words   <list> ["worst", "bad", "thing", "never", "buy"]
+    #> $ hashed_features <list> [[[433], [768], [2020], [3081], [4092]], [1, 1, 1, 1, …
+    #> $ features        <list> [[[433], [768], [2020], [3081], [4092]], [0.4472136, 0…
+    #> $ rawPrediction   <list> [[6.00653, 5.469893, -11.47642], [3]]
+    #> $ probability     <list> [[0.6310298, 0.3689702, 1.611768e-08], [3]]
+    #> $ prediction      <dbl> 0
     ```
 
     ``` r
     tibble(review = "I really loved the proudct best product", score = "") %>% 
       mleap_transform(sff_mleap_model, .) %>% 
       dplyr::glimpse()
+    #> Rows: 1
+    #> Columns: 10
+    #> $ review          <chr> "I really loved the proudct best product"
+    #> $ score           <chr> ""
+    #> $ label           <dbl> 2
+    #> $ word_list       <list> ["i", "really", "loved", "the", "proudct", "best", "pr…
+    #> $ wo_stop_words   <list> ["really", "loved", "proudct", "best", "product"]
+    #> $ hashed_features <list> [[[2187], [2365], [3229], [3727], [3984]], [1, 1, 1, 1…
+    #> $ features        <list> [[[2187], [2365], [3229], [3727], [3984]], [0.4472136,…
+    #> $ rawPrediction   <list> [[4.768167, 6.708236, -11.47642], [3]]
+    #> $ probability     <list> [[0.1256402, 0.8743598, 1.107122e-08], [3]]
+    #> $ prediction      <dbl> 1
     ```
 
-## Shiny app
+## Known limitations
 
-A very simple Shiny app
+MLeap translates the feature transformer and models into its own code
+base. Not everything available in Spark is translated.
 
-``` r
-remotes::install_github("rstudio/mleap", ref = "fixes")
-shiny::runApp(system.file(package = "mleap", "app"))
-```
+This means two layering things:
+
+1.  No `dplyr` transformation is available. Only models and feature
+    transformers are available. In `sparklyr`, feature transformers are
+    functions that start with `ft_`.
+
+2.  Not every Spark Feature Transformer and model are supported. Please
+    refer to the MLeap documentation to see a concise view of what is
+    available: [MLeap Supported Transformers &
+    Models](https://combust.github.io/mleap-docs/core-concepts/transformers/support.html).
+
+Most notably, the following three transformers are not supported:
+
+-   `ft_dplyr_transformer()`
+-   `ft_sql_transformer()`
+-   `ft_r_formula()`
+
+There is a **workaround for `ft_r_formula()`**. It involves using the ML
+Pipeline “way” of setting up the outcome and predictors. For the
+predictors, use `ft_vector_assembler()` if the final stage of the
+predictors is not a single vectorized variable. For outcomes, anything
+numeric works fine, but anything categorical will not. Use
+`ft_string_indexer()` on top of the outcome variable, before passing it
+to the modeling step (See the Example section).
