@@ -23,6 +23,26 @@ library(tibble)
 
 Sys.setenv("JAVA_HOME" = "/usr/local/java")
 
+toc <- function() {
+  re <- readLines("README.Rmd")
+  has_title <- as.logical(lapply(re, function(x) substr(x, 1, 2) == "##"))
+  only_titles <- re[has_title]
+  titles <- trimws(gsub("#", "", only_titles))
+  links <- trimws(gsub("`", "", titles))
+  links <- tolower(links)
+  links <- trimws(gsub(" ", "-", links))
+  links <- trimws(gsub(",", "", links))
+  toc_list <- lapply(
+    seq_along(titles),
+    function(x) {
+      pad <- ifelse(substr(only_titles[x], 1, 3) == "###", "    - ", "  - ")
+      paste0(pad, "[", titles[x], "](#",links[x], ")")
+    }
+  )
+  toc_full <- paste(toc_list, collapse = "\n") 
+  cat(toc_full)
+}
+
 ```
 
 <!-- badges: start -->
@@ -33,7 +53,7 @@ Sys.setenv("JAVA_HOME" = "/usr/local/java")
 
 ## Intro
 
-### MLeap
+### What is MLeap?
 
 [MLeap](https://github.com/combust/mleap) allows us to take Spark pipelines to production. The MLeap runtime can recreate most of Spark's feature transformers 
 and model predictions. This allows for the ML Pipeline to be **deployed with no
@@ -49,45 +69,98 @@ predictions (see Figure 2).
 
 ![Figure 2 - Deploy with MLeap](man/readme/mleap-predict.png)
 
-### `mleap` package
+### The `mleap` package
 
 The goal of the `mleap` package is twofold:
 
 1. Convert an ML Pipeline Model created in `sparklyr`, into an MLeap bundle file
 
-1. Load an MLeap bundle file into an R session (without Spark), and to use the
-loaded bundle to run predictions (transformations)
+1. Load an MLeap bundle file into an R session, and then use the loaded bundle for
+predictions
+
+Additionally, the `mleap` package allows us to load an existing MLeap bundle into
+a Spark session. This would typically be to re-train, or modify a previously 
+created ML Pipeline Model. 
+
+The primary functions in `mleap` are:
+
+- `ml_write_to_bundle_transformed()` - Writes an MLeap bundle. It depends on data that has
+been trained using the pipeline
+
+- `mleap_load_bundle()` - Loads an MLeap bundle file into R 
+
+- `mleap_transform()` - Runs the MLeap bundle steps against new data in R
+
+Additional operational functions in `mleap` are:
+
+- `ml_read_bundle()` - Loads an MLeap bundle file into Spark, via a `sparklyr`
+session
+
+- `ml_write_bundle()` - Writes an MLeap bundle. It depends on a sample of the 
+training data to re-train the pipeline
+
+## Use Cases
+
+Here are couple of use cases to consider using MLeap, with `mleap`:
+
+- It opens the door to **collaborate with non-R, and even non-Spark, teams**. The resulting
+MLeap bundle can be used as the integration for those teams to use the model in
+other environments.
+
+- **Deploy a Shiny app, or a `plumber` API, with no dependencies on Spark**. Using
+`mleap`, the model can be loaded into the R environment, and then used for predictions
+within the R artifact. 
+
 
 ## Getting started
 
-**mleap** can be installed from CRAN via:
+In order for the R package to work, we will need a local installation of MLeap. 
+Maven is required to install MLeap. `mleap` contains functions to take care of
+that. 
 
-```{r eval = FALSE}
-install.packages("mleap")
-```
 
-or, for the latest development version from GitHub, using:
+### Steps
 
-```{r eval = FALSE}
-devtools::install_github("rstudio/mleap")
-```
+1. **Install `mleap`.** For the CRAN version use:
 
-## Install Maven and MLeap
+    ```r
+    install.packages("mleap")
+    ```
+   
+   For the development version, use:
+    
+    ```r
+    devtools::install_github("rstudio/mleap")
+    ```
 
-Once `mleap` has been installed, we can install the external dependencies using
+2. **Install Maven.** If you already have Maven installed, you can 
+let `mleap` know by setting an R option:
 
-```{r eval = FALSE}
-library(mleap)
+    ```r
+    options(maven.home = "path/to/maven")`:
+    ```
+    
+    If no installation of Maven exists, use:
 
-install_maven()
-```
+    ```r
+    mleap::install_maven()
+    ```
 
-Alternatively, if you already have Maven installed, you can let `mleap` know by
-setting an R option: `options(maven.home = "path/to/maven")`
+3. **Install MLeap.** There are a couple of considerations regarding the version
+of MLeap to install:
 
-```{r eval = FALSE}
-install_mleap()
-```
+    - If using Spark, the version of MLeap to install and use will be that closest
+    to the recommended one by the developers of MLeap. The `mleap_dep_versions_table()`
+    contains the combinations of Spark and MLeap versions as reference. 
+    
+    - If not using Spark, meaning, that we are using `mleap` to load an existing
+    bundle, then we would need to match the version of MLeap in which the 
+    bundle was originally created.
+
+    ```r
+    mleap::install_mleap(version = "0.20.0")
+    ```
+
 
 ## Example
 
