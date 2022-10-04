@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   out.width = "100%",
   fig.align='center',
-  eval = TRUE
+  eval = FALSE
 )
 
 Sys.setenv("JAVA_HOME" = "/Library/Java/JavaVirtualMachines/jdk-18.0.1.1.jdk/Contents/Home")
@@ -39,7 +39,7 @@ Sys.setenv("JAVA_HOME" = "/usr/local/java")
 and model predictions. This allows for the ML Pipeline to be **deployed with no
 Spark dependencies**. 
 
-![Figure 1 - Train in Spark](man/readme/mleap-fit.png){width=80%}
+![Figure 1 - Train in Spark](man/readme/mleap-fit.png)
 
 In practice, we can save the ML Pipeline Model (fitted model) as an MLeap bundle 
 (see Figure 1). MLeap serializes the pipeline steps and model.  The resulting Zip 
@@ -47,7 +47,7 @@ file can  then be used in an external environment that has MLeap. Once the MLeap
 bundle is loaded in the new environment, new data can be passed to obtain 
 predictions (see Figure 2).
 
-![Figure 2 - Deploy with MLeap](man/readme/mleap-predict.png){width=50%}
+![Figure 2 - Deploy with MLeap](man/readme/mleap-predict.png)
 
 ### `mleap` package
 
