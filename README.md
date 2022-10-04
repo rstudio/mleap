@@ -154,100 +154,127 @@ take care of that.
 
 ## Example
 
-``` r
-library(sparklyr)
-library(modeldata)
+For the example, we will use the *Fine Foods* example data. It contains
+reviews of foods. We will use an ML Pipeline Model to predict if the
+verbiage in the review can tell us if the customer thinks if the product
+is “great”.
 
-data("small_fine_foods")
+1.  We will use a local version of Spark, version 3.2:
 
-sc <- spark_connect(master = "local", version = "3.2")
+    ``` r
+    library(sparklyr)
+    library(modeldata)
 
-sff_training_data <- copy_to(sc, training_data)
+    data("small_fine_foods")
 
-sff_testing_data <- copy_to(sc, testing_data)
-```
+    sc <- spark_connect(master = "local", version = "3.2")
 
-``` r
-sff_training_data %>% 
-  ft_string_indexer(
-    input_col = "score",
-    output_col = "label",
-    handle_invalid = "keep",
-    string_order_type = "alphabetAsc"
-  ) %>% 
-  select(score, label) %>% 
-  dplyr::count(score, label)
-```
+    sff_training_data <- copy_to(sc, training_data)
 
-``` r
-sff_pipeline <- ml_pipeline(sc) %>% 
-  ft_string_indexer(
-    input_col = "score",
-    output_col = "label",
-    handle_invalid = "keep",
-    string_order_type = "alphabetDesc"
-  ) %>% 
-  ft_tokenizer(
-    input_col = "review",
-    output_col = "word_list"
-  ) %>% 
-  ft_stop_words_remover(
-    input_col = "word_list", 
-    output_col = "wo_stop_words"
-    ) %>% 
-  ft_hashing_tf(
-    input_col = "wo_stop_words", 
-    output_col = "hashed_features", 
-    num_features = 4096,
-    binary = TRUE
-    ) %>%
-  ft_normalizer(
-    input_col = "hashed_features", 
-    output_col = "features"
-    ) %>% 
-  ml_logistic_regression(elastic_net_param = 0.05, reg_param = 0.25)  
+    sff_testing_data <- copy_to(sc, testing_data)
+    ```
 
-sff_pipeline_model <- ml_fit(sff_pipeline, sff_training_data)
+2.  We will create an ML Pipeline. We will index the outcome varaible
+    (**score**), and then use several text feature transformers to
+    create the **features** column which will be used as our predictor:
 
-sff_test_predictions <- sff_pipeline_model %>% 
-  ml_transform(sff_testing_data) 
+    ``` r
+    sff_pipeline <- ml_pipeline(sc) %>% 
+      ft_string_indexer(
+        input_col = "score",
+        output_col = "label",
+        handle_invalid = "keep",
+        string_order_type = "alphabetDesc"
+      ) %>% 
+      ft_tokenizer(
+        input_col = "review",
+        output_col = "word_list"
+      ) %>% 
+      ft_stop_words_remover(
+        input_col = "word_list", 
+        output_col = "wo_stop_words"
+        ) %>% 
+      ft_hashing_tf(
+        input_col = "wo_stop_words", 
+        output_col = "hashed_features", 
+        num_features = 4096,
+        binary = TRUE
+        ) %>%
+      ft_normalizer(
+        input_col = "hashed_features", 
+        output_col = "features"
+        ) %>% 
+      ml_logistic_regression(elastic_net_param = 0.05, reg_param = 0.25)
+    ```
 
-ml_metrics_binary(sff_test_predictions, truth = label, estimate = prediction)
-```
+3.  An ML Pipeline Model is now created after running the training data
+    through the pipeline created in the previous step:
 
-``` r
-ml_write_to_bundle_transformed(
-  x = sff_pipeline_model,  
-  transformed_dataset = sff_test_predictions,  
-  path = "sff.zip", 
-  overwrite = TRUE
-  )
+    ``` r
+    sff_pipeline_model <- ml_fit(sff_pipeline, sff_training_data)
+    ```
 
-spark_disconnect(sc) 
-```
+4.  Assuming we are happy with the results. We run the same pipeline
+    using the hold-out set (`sff_testing_data`). The idea, is that we
+    can use this last transformed data set as a base for our MLeap
+    bundle.
 
-## MLeap Bundle (without Spark dependency)
+    ``` r
+    sff_test_predictions <- sff_pipeline_model %>% 
+      ml_transform(sff_testing_data)
+    ```
 
-``` r
-sff_mleap_model <- mleap_load_bundle("inst/app/sff.zip")
-sff_mleap_model
-```
+5.  Using `ml_write_to_bundle_transformed()` from `mleap`, we save the
+    new ML Pipeline Model as an MLeap bundle. We also pass the
+    transformed data set we created with the hold-out test set.
 
-``` r
-str(sff_mleap_model)
-```
+    ``` r
+    ml_write_to_bundle_transformed(
+      x = sff_pipeline_model,  
+      transformed_dataset = sff_test_predictions,  
+      path = "sff.zip", 
+      overwrite = TRUE
+      )
+    ```
 
-``` r
-tibble(review = "worst bad thing I will never buy again", score = "") %>% 
-  mleap_transform(sff_mleap_model, .) %>% 
-  glimpse()
-```
+6.  We can now close the Spark connection
 
-``` r
-tibble(review = "I really loved the proudct best product", score = "") %>% 
-  mleap_transform(sff_mleap_model, .) %>% 
-  dplyr::glimpse()
-```
+    ``` r
+    spark_disconnect(sc) 
+    ```
+
+## Loading an MLeap bundle to R (without Spark dependencies)
+
+1.  We can use the same bundle created in the previous section to load
+    into R. Simply pass the path to the Zip file to `ml_load_bundle()`:
+
+    ``` r
+    sff_mleap_model <- mleap_load_bundle("sff.zip")
+
+    sff_mleap_model
+    ```
+
+2.  We can use `mleap_model_schema()` to view more information about the
+    contents of the bundle:
+
+    ``` r
+    mleap_model_schema(sff_mleap_model)
+    ```
+
+3.  `mleap_transform()` can process the model and new data. Pass a
+    `tibble` with the expected **input** variables:
+
+    ``` r
+    tibble(review = "worst bad thing I will never buy again", score = "") %>% 
+      mleap_transform(sff_mleap_model, .) %>% 
+      glimpse()
+    ```
+
+    ``` r
+    tibble(review = "I really loved the proudct best product", score = "") %>% 
+      mleap_transform(sff_mleap_model, .) %>% 
+      dplyr::glimpse()
+    ```
 
 ## Shiny app
 
