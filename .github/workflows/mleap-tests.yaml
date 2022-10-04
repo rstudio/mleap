@@ -1,0 +1,117 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/master/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+name: MLeap-Tests
+
+jobs:
+  MLeap-Tests:
+    runs-on: ubuntu-latest
+
+    name: Spark ${{ matrix.config.spark }} | MLeap ${{ matrix.config.mleap }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {spark: '3.2.0', hadoop: '3.2', mleap: '0.20.0'}
+          - {spark: '2.4.0', hadoop: '2.7', mleap: '0.15.0'}
+  
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      SPARK_VERSION:  ${{ matrix.config.spark }}
+      MLEAP_VERSION:  ${{ matrix.config.mleap }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Java Home set
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin' 
+          java-version: '18.0.1'
+          
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache-version: 2
+          extra-packages: |
+            any::devtools        
+          
+      - name: Cache Spark
+        id: cache-spark
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/spark/spark-${{ matrix.config.spark }}-bin-hadoop${{ matrix.config.hadoop }}
+          key: sparklyr-spark-${{ matrix.config.spark }}-bin-hadoop${{ matrix.config.hadoop }}-3
+
+      - name: Install Spark (via sparklyr)
+        if: steps.cache-spark.outputs.cache-hit != 'true'
+        run: |
+          sparklyr::spark_install(version = Sys.getenv("SPARK_VERSION"))
+        shell: Rscript {0}
+
+      - name: Cache Scala
+        id: cache-scala
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/scala/
+          key: scala-2
+
+      - name: Install Scala (via sparklyr)
+        if: steps.cache-scala.outputs.cache-hit != 'true'
+        run: |
+          sparklyr::download_scalac()
+          sparklyr::find_scalac("2.12")
+        shell: Rscript {0}
+
+      - name: Cache Maven
+        id: cache-maven
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/maven/
+          key: maven-1
+
+      - name: Install Maven (via mleap)
+        if: steps.cache-maven.outputs.cache-hit != 'true'
+        run: |
+          devtools::load_all()
+          install_maven()
+        shell: Rscript {0}
+        
+      - name: Cache MLeap
+        id: cache-mleap
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/mleap/mleap-${{ matrix.config.mleap }}
+          key: mleap-1
+
+      - name: Install MLeap (via mleap)
+        if: steps.cache-mleap.outputs.cache-hit != 'true'
+        run: |
+          devtools::load_all()
+          install_mleap(version = Sys.getenv("MLEAP_VERSION"))
+        shell: Rscript {0}        
+
+      - name: R Session Info
+        run: sessionInfo()
+        shell: Rscript {0}
+
+      - name: R Environment Variables
+        run: Sys.getenv()
+        shell: Rscript {0}
+
+      - name: R Tests
+        run: |
+          Sys.setenv("SPARKLYR_JAVA_HOME" = Sys.getenv("JAVA_HOME_8_X64"))
+          Sys.getenv("SPARKLYR_JAVA_HOME")        
+          devtools::test()
+        shell: Rscript {0}

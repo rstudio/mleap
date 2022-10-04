@@ -13,3 +13,5 @@
 ^tests/testthat/logs/
 ^tests/testthat/derby\.log$
 ^cran-comments\.md$
+^utils/
+^\.github$
