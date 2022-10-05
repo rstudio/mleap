@@ -20,6 +20,7 @@ rJava::.jinit()
 #library(mleap)
 devtools::load_all()
 library(tibble)
+library(sparklyr)
 
 Sys.setenv("JAVA_HOME" = "/usr/local/java")
 
@@ -97,6 +98,8 @@ session
 - `ml_write_bundle()` - Writes an MLeap bundle. It depends on a sample of the 
 training data to re-train the pipeline
 
+![Figure 3 - mleap functions](man/readme/mleap-functions.png)
+
 ## Use Cases
 
 Here are couple of use cases to consider using MLeap, with `mleap`:
@@ -158,7 +161,6 @@ of MLeap to install:
     ```r
     mleap::install_mleap(version = "0.20.0")
     ```
-
 
 ## Example
 

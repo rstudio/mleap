@@ -41,3 +41,35 @@ flowchart LR
   style ml  fill:#00ff99, stroke:#000
 ```
 
+
+```{mermaid}
+%%| fig-width: 8.5
+flowchart LR
+  subgraph id1 [ ]
+  subgraph id2 [ ]
+    subgraph sp [Spark Session]
+      fp[Spark ML<br>Pipeline Model]
+    end
+    fp -- "ml_write_to_bundle_transformed()" --> ml[MLeap <br> bundle file]
+    ml -- "mleap_load_bundle()" --> lb
+    ml -- "ml_read_bundle()" --> fn
+    subgraph r["New R Session"]
+      lb["Loaded bundle"] -- "mleap_transform()" --> pr["Predictions"]
+    end
+    subgraph ns["New Spark Session"]
+      fn[Spark ML Pipeline Model]
+    end
+  end
+  end
+  
+  style pr  fill:#00ffff, stroke:#000
+  style lb  fill:#ccffff, stroke:#000
+  style r   fill:#ccffff, stroke:#000
+  style ns  fill:#ffcc99, stroke:#000
+  style sp  fill:#ffcc99, stroke:#000
+  style id1 fill:#ffffff, stroke:#fff
+  style id2 fill:#ffffff, stroke:#fff
+  style fp  fill:#ffcc00, stroke:#000
+  style fn  fill:#ffcc00, stroke:#000
+  style ml  fill:#00ff99, stroke:#000
+```

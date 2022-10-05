@@ -61,6 +61,8 @@ Additional operational functions in `mleap` are:
 -   `ml_write_bundle()` - Writes an MLeap bundle. It depends on a sample
     of the training data to re-train the pipeline
 
+![Figure 3 - mleap functions](man/readme/mleap-functions.png)
+
 ## Use Cases
 
 Here are couple of use cases to consider using MLeap, with `mleap`:
@@ -135,11 +137,6 @@ is “great”.
 
     ``` r
     library(sparklyr)
-    #> 
-    #> Attaching package: 'sparklyr'
-    #> The following object is masked from 'package:stats':
-    #> 
-    #>     filter
     library(modeldata)
 
     data("small_fine_foods")
@@ -231,8 +228,8 @@ is “great”.
 
     sff_mleap_model
     #> MLeap Transformer
-    #> <5cd7ee8f-0bfe-40ce-98c9-0417bd617d0a> 
-    #>   Name: pipeline__f51830f2_fd8c_405c_ba05_1344bce3bddb 
+    #> <d04e078a-2786-4e5e-923b-cea0ba0ca392> 
+    #>   Name: pipeline__4ac614f9_18a1_48f0_ac53_d4d03ca86464 
     #>   Format: json 
     #>   MLeap Version: 0.20.0
     ```
