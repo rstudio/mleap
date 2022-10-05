@@ -95,6 +95,11 @@ jobs:
           path: /home/runner/mleap/mleap-${{ matrix.config.mleap }}
           key: mleap-1
 
+      - name: Temp Remove mleap
+        run: |
+          devtools::load_all()
+          fs::dir_delete(resolve_mleap_path())
+          
       - name: Install MLeap (via mleap)
         run: |
           devtools::load_all()
