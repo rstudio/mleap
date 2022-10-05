@@ -19,7 +19,6 @@ jobs:
       matrix:
         config:
           - {spark: '3.2.0', hadoop: '3.2', mleap: '0.20.0'}
-          - {spark: '2.4.0', hadoop: '2.7', mleap: '0.15.0'}
   
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -114,4 +113,5 @@ jobs:
           Sys.setenv("SPARKLYR_JAVA_HOME" = Sys.getenv("JAVA_HOME_8_X64"))
           Sys.getenv("SPARKLYR_JAVA_HOME")        
           devtools::test()
+          rJava::.jclassPath()
         shell: Rscript {0}

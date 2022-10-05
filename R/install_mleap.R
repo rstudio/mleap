@@ -96,7 +96,9 @@ resolve_mleap_path <- function(version = NULL) {
     map(~ numeric_version(.x)) %>%
     reduce(~ (if (.x > .y) .x else .y)) %>%
     as.character())
+  
   version_index <- which(version == installed_versions$mleap)[[1]]
+  
   if (!length(version_index)) {
     stop("MLeap version ", version, " not found.")
   }
@@ -236,9 +238,15 @@ command_success <- function(result) {
 }
 
 load_mleap_jars <- function(version = NULL) {
-  mleap_path <- resolve_mleap_path(version)
-  .jpackage(
-    "mleap",
-    morePaths = list.files(mleap_path, full.names = TRUE)
-  )
+    if(.globals$init_local_mleap) {
+    .jinit()
+    if (!any(grepl("mleap-runtime", .jclassPath()))) {
+      mleap_path <- resolve_mleap_path(version)
+      .jpackage(
+        "mleap",
+        morePaths = list.files(mleap_path, full.names = TRUE)
+      )    
+    }
+    .globals$init_local_mleap <- FALSE 
+  }
 }

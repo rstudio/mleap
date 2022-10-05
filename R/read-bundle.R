@@ -20,11 +20,8 @@ ml_read_bundle <- function(sc, path) {
 #'
 #' @export
 mleap_load_bundle <- function(path) {
-  # if mleap runtime jars aren't in class path (from package load),
-  #   load jars
-  if (!any(grepl("mleap-runtime", .jclassPath()))) {
-    load_mleap_jars()
-  }
+
+  load_mleap_jars() 
 
   ctx_builder <- .jnew("ml.combust.mleap.runtime.javadsl.ContextBuilder")
   ctx <- .jcall(
