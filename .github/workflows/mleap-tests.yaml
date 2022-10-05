@@ -40,7 +40,7 @@ jobs:
           use-public-rspm: true
 
       - name: Configures Java for R
-        run: R CMD javareconf
+        run: sudo $(which R) CMD javareconf
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
