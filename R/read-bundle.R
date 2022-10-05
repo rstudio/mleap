@@ -25,7 +25,8 @@ mleap_load_bundle <- function(path) {
 
   ctx_builder <- .jnew("ml.combust.mleap.runtime.javadsl.ContextBuilder")
   ctx <- .jcall(
-    ctx_builder, "Lml/combust/mleap/runtime/MleapContext;",
+    ctx_builder, 
+    "Lml/combust/mleap/runtime/MleapContext;",
     "createMleapContext"
   )
   path <- normalizePath(path)
@@ -34,7 +35,9 @@ mleap_load_bundle <- function(path) {
   transformer <- .jcall(
     bundle_builder,
     "Lml/combust/bundle/dsl/Bundle;",
-    "load", bundle_file, ctx
+    "load", 
+    bundle_file, 
+    ctx
   )
   new_mleap_transformer(transformer)
 }
