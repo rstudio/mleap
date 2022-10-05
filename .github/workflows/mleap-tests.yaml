@@ -83,7 +83,6 @@ jobs:
           key: maven-1
 
       - name: Install Maven (via mleap)
-        if: steps.cache-maven.outputs.cache-hit != 'true'
         run: |
           devtools::load_all()
           install_maven()
@@ -97,7 +96,6 @@ jobs:
           key: mleap-1
 
       - name: Install MLeap (via mleap)
-        if: steps.cache-mleap.outputs.cache-hit != 'true'
         run: |
           devtools::load_all()
           install_mleap(version = Sys.getenv("MLEAP_VERSION"))
