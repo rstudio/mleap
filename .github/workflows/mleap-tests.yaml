@@ -80,7 +80,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /home/runner/maven/
-          key: maven-1
+          key: maven-2
 
       - name: Install Maven (via mleap)
         run: |
@@ -93,7 +93,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /home/runner/mleap/mleap-${{ matrix.config.mleap }}
-          key: mleap-1
+          key: mleap-2
 
       - name: Temp Remove mleap
         run: |
@@ -117,8 +117,5 @@ jobs:
 
       - name: R Tests
         run: |
-          Sys.setenv("SPARKLYR_JAVA_HOME" = Sys.getenv("JAVA_HOME_8_X64"))
-          Sys.getenv("SPARKLYR_JAVA_HOME")        
           devtools::test()
-          rJava::.jclassPath()
         shell: Rscript {0}

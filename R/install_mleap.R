@@ -44,7 +44,7 @@ install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
   tryCatch(
     maven_download_jars(
       mvn,
-      version_deps$maven,
+      version_deps$maven_mleap,
       mleap_dir,
       use_temp_cache = use_temp_cache
     ),

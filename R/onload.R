@@ -15,7 +15,7 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
         mustWork = TRUE
       )
     ),
-    packages = mleap_version$maven
+    packages = mleap_version$maven_spark
   )
 }
 

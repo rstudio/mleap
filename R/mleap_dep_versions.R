@@ -1,6 +1,6 @@
 #' A table containing the combinations of Spark, Scala and MLeap versions to use
 #' @export
-mleap_dep_versions_table <- function() {
+mleap_dep_versions <- function() {
   mleap_dep_versions_list() %>%
     map(~ as_tibble(.x)) %>%
     reduce(function(x, y) rbind(x, y))
@@ -22,7 +22,8 @@ mleap_dep_versions_list <- function(spark_version = NULL, scala_version = NULL,
     ver,
     ~ {
       x <- .x
-      x$maven <- sprintf("ml.combust.mleap:mleap-spark_%s:%s", x$scala, x$mleap)
+      x$maven_spark <- sprintf("ml.combust.mleap:mleap-spark_%s:%s", x$scala, x$mleap)
+      x$maven_mleap <- sprintf("ml.combust.mleap:mleap-runtime_%s:%s", x$scala, x$mleap)
       x$spark_major <- substr(x$spark, 1, 3)
       x$jar_name <- sprintf("mleap-%s-%s.jar", x$spark_major, x$scala)
       x
