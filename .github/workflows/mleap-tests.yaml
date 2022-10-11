@@ -94,7 +94,7 @@ jobs:
         with:
           path: /home/runner/mleap/mleap-${{ matrix.config.mleap }}
           key: mleap-2
-          
+
       - name: Install MLeap (via mleap)
         run: |
           devtools::load_all()
@@ -111,5 +111,7 @@ jobs:
 
       - name: R Tests
         run: |
+          Sys.setenv("SPARKLYR_JAVA_HOME" = Sys.getenv("JAVA_HOME_8_X64"))
+          Sys.getenv("SPARKLYR_JAVA_HOME")        
           devtools::test()
         shell: Rscript {0}
