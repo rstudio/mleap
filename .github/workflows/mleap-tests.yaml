@@ -94,12 +94,6 @@ jobs:
         with:
           path: /home/runner/mleap/mleap-${{ matrix.config.mleap }}
           key: mleap-2
-
-      - name: Temp Remove mleap
-        run: |
-          devtools::load_all()
-          fs::dir_delete(resolve_mleap_path())
-        shell: Rscript {0}      
           
       - name: Install MLeap (via mleap)
         run: |
