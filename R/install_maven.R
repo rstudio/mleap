@@ -51,7 +51,7 @@ install_maven <- function(dir = NULL, version = NULL) {
   if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
 
   file_delete(maven_path)
-  .globals$maven_dir <- maven_dir
+  mleap_set_session_defaults(maven_home = maven_dir) 
   message("Maven installation succeeded.")
   invisible(NULL)
 }
@@ -78,10 +78,18 @@ install_dir <- function(dir_name) {
 }
 
 resolve_maven_path <- function() {
-  maven_dir <- getOption("maven.home", .globals$maven_dir) %||% install_dir("maven")
-  maven_path <- list.files(maven_dir, full.names = TRUE, recursive = TRUE) %>%
-    grep("/bin/mvn$", ., value = TRUE) %>%
-    head(1)
+  maven_dir <- mleap_get_session_defaults("runtime", "maven_home")
+  if(dir_exists(maven_dir)) {
+    maven_path <- maven_dir %>% 
+      dir_ls(recurse = TRUE, type = "file") %>%
+      grep("/bin/mvn$", ., value = TRUE) %>%
+      path() %>% 
+      head(1)  
+  } else {
+    maven_path <- character(0)
+  }
+  
+  
   if (!length(maven_path)) {
     stop("Can't find Maven. Specify options(maven.home = ...) or run install_maven().",
       call. = FALSE
