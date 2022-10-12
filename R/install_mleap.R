@@ -162,14 +162,13 @@ maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
   pom_path <- file.path(
     temp_dir, paste0(artifact_version[[1]], "-", artifact_version[[2]], ".pom")
   )
-  # package_java_dir <-  file.path(package_path, "java/")
 
   args_get_artifact <- list(
     mvn,
     c(
       "dependency:get",
       paste0("-Dartifact=", dependency),
-      paste0(" -Ddest=", install_dir),
+      paste0("-Ddest=", install_dir),
       paste0("-DremoteRepositories=", repo)
     )
   )
