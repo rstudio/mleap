@@ -200,19 +200,6 @@ maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
   }
 }
 
-get_preferred_apache_mirror <- function(apache_portal = NULL) {
-  ap <- apache_portal %||% get_mleap_session_defaults()$setup$apache_mirror_selection
-  mirrors_info <- fromJSON(ap)
-  mirrors_info$preferred
-}
-
-get_maven_download_link <- function(version) {
-  paste0(
-    get_preferred_apache_mirror(),
-    sprintf("maven/maven-3/%s/binaries/apache-maven-%s-bin.tar.gz", version, version)
-  )
-}
-
 execute_command <- function(args, maven_local_repo) {
   if (!is.null(maven_local_repo)) {
     args[[2]] <- c(
