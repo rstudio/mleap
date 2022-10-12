@@ -138,7 +138,7 @@ maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
     unlist() %>%
     `[`(2:3)
 
-  repo <- getOption("maven.repo", .globals$default_maven_repo)
+  repo <- mleap_get_session_defaults("installation", "maven", "repo")
 
   args_get_pom <- list(
     mvn,

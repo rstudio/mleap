@@ -1,11 +1,11 @@
 {
   "installation":{
       "mleap": {
-        "version": "0.20.0",
-        "maven_repo": "https://repo1.maven.org/maven2/"
+        "version": "0.20.0"
       },
       "maven":{
         "version": "3.8.6",
+        "repo": "https://repo1.maven.org/maven2/",
         "apache_mirror_selection": "https://apache.org/dyn/closer.cgi?as_json=1",
         "download_path": "maven/maven-3/$version/binaries/apache-maven-$version-bin.tar.gz"
       }
