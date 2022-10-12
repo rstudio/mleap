@@ -1,5 +1,5 @@
 current_spark_env_version <- testthat_spark_env_version()
-mleap_deps <- mleap_dep_versions()
+mleap_deps <- mleap_dependency_versions()
 spark_max <- max(mleap_deps$spark_major)
 
 if(!(spark_max >= current_spark_env_version)) {

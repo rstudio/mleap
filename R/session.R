@@ -7,7 +7,9 @@ mleap_set_session_defaults <- function(apache_mirror_url = NULL,
                                        apache_mirror_selection = NULL,
                                        maven_download_path = NULL,
                                        mleap_default_version = NULL, 
+                                       mleap_default_folder = NULL, 
                                        maven_default_version = NULL,
+                                       maven_default_folder = NULL,
                                        versions = NULL
                                        ) {
   
@@ -17,44 +19,42 @@ mleap_set_session_defaults <- function(apache_mirror_url = NULL,
   msd <- .mleap_globals$session_defaults 
   if(is.null(msd)) msd <- cj
   
-  msd$installation$maven$apache_mirror_selection <- coalesce_vars(
-    apache_mirror_selection,
-    msd$installation$maven$apache_mirror_selection
-  ) 
   
-  msd$installation$maven$apache_mirror_url<- coalesce_vars(
-    apache_mirror_url,
-    msd$installation$maven$apache_mirror_url,
-    get_apache_mirror(msd$installation$maven$apache_mirror_selection)
-  )  
+  mv <- msd$installation$maven
   
-  msd$installation$maven$download_path <- coalesce_vars(
-    maven_download_path,
-    msd$installation$maven$download_path
-  ) 
+  ams <- apache_mirror_selection %||% mv$apache_mirror_selection
   
-  msd$installation$maven$version <- coalesce_vars(
-    maven_default_version,
-    msd$installation$maven$version
+  installation_maven <- tibble(
+    version = maven_default_version %||% mv$version,
+    apache_mirror_selection = ams,
+    apache_mirror_url = apache_mirror_url %||% mv$apache_mirror_url, get_apache_mirror(ams),
+    download_path = maven_download_path %||% mv$download_path,
+    base_folder = maven_default_folder %||%  mv$base_folder %||% install_dir("maven")
+  )
+  
+  ml <- msd$installation$mleap
+  
+  installation_mleap <- tibble(
+    version = mleap_default_version %||% ml$version,
+    maven_repo = maven_repo %||% ml$maven_repo, 
+    base_folder = mleap_default_folder %||% ml$base_folder %||% install_dir("mleap")
   )
 
-  msd$installation$mleap$verion <- coalesce_vars(
-    mleap_default_version,
-    msd$installation$mleap$verion
-  ) 
+  vers <- versions %||% msd$versions  
   
-  msd$installation$mleap$maven_repo <- coalesce_vars(
-    maven_repo,
-    msd$installation$mleap$maven_repo
-  )  
+  all_versions <- finalize_versions(vers)
   
-  msd$versions <- coalesce_vars(
-    versions,
-    msd$versions  
-  ) %>% 
-    finalize_versions()
+  ret <- list(
+    installation = list(
+      mleap = installation_mleap,
+      maven = installation_maven
+    ),
+    versions = all_versions
+  )
   
-  .mleap_globals$session_defaults  <- msd
+  .mleap_globals$session_defaults  <- ret
+  
+  invisible(NULL)
 }
 
 mleap_get_session_defaults <- function(...) {
@@ -70,23 +70,8 @@ mleap_get_session_defaults <- function(...) {
   msd
 }
 
-coalesce_vars <- function(...) {
-  vars <- enexprs(...)
-  for(i in seq_along(vars)) {
-    x <- vars[[i]]
-    if(!is.null(x)) {
-      cx <- class(x)
-      if(cx %in% c("call", "name")) {
-        x <- eval.parent(x, 1)
-        if(!is.null(x)) return(x)
-      } else {
-        return(x)
-      }
-    }
-  }
-}
-
 get_apache_mirror <- function(apache_portal = NULL) {
+  return(NULL)
   mirrors_info <- fromJSON(apache_portal)
   mirrors_info$preferred
 }
