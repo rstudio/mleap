@@ -8,26 +8,19 @@ mleap_dep_versions <- function() {
 
 mleap_dep_versions_list <- function(spark_version = NULL, scala_version = NULL,
                                     mleap_version = NULL) {
-  ver <- list(
-    list(spark = "2.0.0", scala = "2.11", mleap = "0.10.3"),
-    list(spark = "2.1.0", scala = "2.11", mleap = "0.11.0"),
-    list(spark = "2.2.0", scala = "2.11", mleap = "0.11.0"),
-    list(spark = "2.3.0", scala = "2.11", mleap = "0.13.0"),
-    list(spark = "2.4.0", scala = "2.11", mleap = "0.15.0"),
-    list(spark = "2.4.5", scala = "2.12", mleap = "0.17.0"),
-    list(spark = "3.0.2", scala = "2.12", mleap = "0.18.1"),
-    list(spark = "3.2.0", scala = "2.12", mleap = "0.20.0")
-  )
-  prep_ver <- map(
-    ver,
-    ~ {
-      x <- .x
-      x$maven_spark <- sprintf("ml.combust.mleap:mleap-spark_%s:%s", x$scala, x$mleap)
-      x$maven_mleap <- sprintf("ml.combust.mleap:mleap-runtime_%s:%s", x$scala, x$mleap)
-      x$spark_major <- substr(x$spark, 1, 3)
-      x$jar_name <- sprintf("mleap-%s-%s.jar", x$spark_major, x$scala)
-      x
-    }
+  ver <- get_mleap_session_defaults()$versions
+  
+  prep_ver <- ver %>% 
+    transpose() %>% 
+    map(
+      ~ {
+        x <- .x
+        x$maven_spark <- sprintf("ml.combust.mleap:mleap-spark_%s:%s", x$scala, x$mleap)
+        x$maven_mleap <- sprintf("ml.combust.mleap:mleap-runtime_%s:%s", x$scala, x$mleap)
+        x$spark_major <- substr(x$spark, 1, 3)
+        x$jar_name <- sprintf("mleap-%s-%s.jar", x$spark_major, x$scala)
+        x
+      }
   )
 
   if (!is.null(spark_version)) {
