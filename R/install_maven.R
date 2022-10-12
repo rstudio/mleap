@@ -18,7 +18,8 @@ install_maven <- function(dir = NULL, version = NULL) {
     return(invisible(NULL))
   }
 
-  version <- version %||% .globals$default_maven_version
+  def_version <- mleap_get_session_defaults("installation", "maven", "version")
+  version <- version %||% def_version
 
   maven_dir <- dir %||% install_dir("maven")
   if (!dir.exists(maven_dir)) {
@@ -30,21 +31,14 @@ install_maven <- function(dir = NULL, version = NULL) {
     sprintf("apache-maven-%s-bin.tar.gz", version)
   )
 
-  download.file(
-    get_maven_download_link(version = version),
-    maven_path
-  )
+  maven_link <- get_maven_download_link(version = version)
+  
+  download.file(maven_link, maven_path)
 
-  checksum_url <- paste0(
-    "https://www.apache.org/dist/maven/maven-3/",
-    version,
-    "/binaries/apache-maven-",
-    version,
-    "-bin.tar.gz.sha512"
-  )
+  checksum_url <- paste0(maven_link, ".sha512")
 
   if (!identical(
-    digest::digest(file = normalizePath(maven_path), algo = "sha512"),
+    digest(file = normalizePath(maven_path), algo = "sha512"),
     readChar(checksum_url, nchars = 128)
   )
   ) {

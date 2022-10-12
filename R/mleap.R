@@ -6,6 +6,8 @@
 #' @importFrom utils head globalVariables download.file untar
 #' @importFrom rJava .jcall .jnew J .jclassPath .jpackage .jinit
 #' @importFrom jsonlite fromJSON toJSON
+#' @importFrom rlang enquos `!!` `!!!` enexprs
+#' @importFrom digest digest
 #' @import tibble
 #' @import fs
 NULL

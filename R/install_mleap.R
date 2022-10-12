@@ -76,7 +76,8 @@ mleap_installed_versions <- function() {
     map_chr(~ gsub("mleap-", "", basename(.x)))
 
   data.frame(
-    mleap = versions, dir = dirs,
+    mleap = versions, 
+    dir = dirs,
     stringsAsFactors = FALSE
   ) %>%
     unique()
