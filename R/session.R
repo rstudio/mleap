@@ -118,7 +118,6 @@ get_version_folder <- function(base_folder, version = NULL) {
 }
 
 get_apache_mirror <- function(apache_portal = NULL) {
-  return("temp_link")
   mirrors_info <- fromJSON(apache_portal)
   mirrors_info$preferred
 }
