@@ -32,7 +32,7 @@ mleap_set_session_defaults <- function(mleap_home = NULL,
     version = maven_default_version %||% mv$version,
     repo = maven_repo %||% getOption("maven.repo") %||% mv$repo, 
     apache_mirror_selection = ams,
-    apache_mirror_url = apache_mirror_url %||% mv$apache_mirror_url, get_apache_mirror(ams),
+    apache_mirror_url = apache_mirror_url %||% mv$apache_mirror_url %||% get_apache_mirror(ams),
     download_path = maven_download_path %||% mv$download_path,
     base_folder = maven_default_folder %||%  mv$base_folder %||% maven_install
   )
