@@ -28,9 +28,10 @@ Depends:
 Imports:
   sparklyr,
   jsonlite,
-  purrr,
   tibble,
   digest, 
+  rlang,
+  purrr,
   rJava,
   fs
 RoxygenNote: 7.2.1

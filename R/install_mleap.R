@@ -44,7 +44,7 @@ install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
   tryCatch(
     maven_download_jars(
       mvn,
-      version_deps$maven,
+      version_deps$maven_mleap,
       mleap_dir,
       use_temp_cache = use_temp_cache
     ),
@@ -76,7 +76,8 @@ mleap_installed_versions <- function() {
     map_chr(~ gsub("mleap-", "", basename(.x)))
 
   data.frame(
-    mleap = versions, dir = dirs,
+    mleap = versions, 
+    dir = dirs,
     stringsAsFactors = FALSE
   ) %>%
     unique()
@@ -137,7 +138,7 @@ maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
     unlist() %>%
     `[`(2:3)
 
-  repo <- getOption("maven.repo", .globals$default_maven_repo)
+  repo <- mleap_get_session_defaults("installation", "maven", "repo")
 
   args_get_pom <- list(
     mvn,
@@ -162,14 +163,13 @@ maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
   pom_path <- file.path(
     temp_dir, paste0(artifact_version[[1]], "-", artifact_version[[2]], ".pom")
   )
-  # package_java_dir <-  file.path(package_path, "java/")
 
   args_get_artifact <- list(
     mvn,
     c(
       "dependency:get",
       paste0("-Dartifact=", dependency),
-      paste0(" -Ddest=", install_dir),
+      paste0("-Ddest=", install_dir),
       paste0("-DremoteRepositories=", repo)
     )
   )
@@ -199,18 +199,6 @@ maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
       call. = FALSE
     )
   }
-}
-
-get_preferred_apache_mirror <- function() {
-  mirrors_info <- fromJSON("https://apache.org/dyn/closer.cgi?as_json=1")
-  mirrors_info$preferred
-}
-
-get_maven_download_link <- function(version) {
-  paste0(
-    get_preferred_apache_mirror(),
-    sprintf("maven/maven-3/%s/binaries/apache-maven-%s-bin.tar.gz", version, version)
-  )
 }
 
 execute_command <- function(args, maven_local_repo) {
