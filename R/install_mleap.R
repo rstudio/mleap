@@ -27,32 +27,50 @@ install_mleap <- function(mleap_version = mleap_defaults("version"),
   if(scala_version == "auto") scala_version <- NULL
 
   pkgs <- versions_get_packages(mleap_version, scala_version)
+  nrow_pkgs <- nrow(pkgs)
   
-  if(!nrow(pkgs)) {
+  if(!nrow_pkgs) {
     stop(
       "No Maven packages found for MLeap version: ", mleap_version, 
       " and Scala version: ", scala_version
     )
   } 
   
+  if(is.null(scala_version)) {
+    scala_version <- pkgs$scala[[1]] 
+    cat("+-- Using Scala version:", scala_version, "\n")
+  }
+  
+  if(force) {
+    cat("+-- force=FALSE - Will skip anything already installed\n")
+  } else {
+    cat("+-- force=TRUE - Will replace previous installations\n")
+  }
+  
+  cat("+-- Number of identified dependencies:", nrow_pkgs, "\n")
+
   if(!dir_exists(dir)) dir_create(dir)
   
-  dir_scala <- paste0("scala-",pkgs$scala[[1]])
-  dir_mleap <- paste0("mleap-", pkgs$mleap[[1]])
+   
+  dir_scala <- paste0("scala-",scala_version)
+  dir_mleap <- paste0("mleap-", mleap_version)
   
   target_dir <- path(dir, paste(dir_mleap, dir_scala, sep = "_"))
   
   if(!dir_exists(target_dir)) dir_create(target_dir)
   
+  pkgs$number <- seq_len(nrow_pkgs)
+  
   pkgs |> 
     transpose() |> 
     walk(~ {
-      cat("Downloading & Installing:", .x$name, "\n")
+      msg <- paste0("+---- [", .x$number, "/", nrow_pkgs, "]")
+      cat(msg, .x$name, "\n")
       name_dir <- path(target_dir, .x$name)
       maven_download_jars(
-        dependency = .x$package, 
+        dependency = .x$package,
         use_temp_cache = use_temp_cache,
-        force = force, 
+        force = force,
         install_dir = name_dir
         )
     })
@@ -171,11 +189,23 @@ maven_download_jars <- function(dependency,
   )
   
   run_pom <- FALSE
-  if(!file_exists(pom_path)) run_pom <- TRUE
-  if(force) run_pom <- TRUE
+  run_install <- FALSE
+  if(!dir_exists(install_dir)) {
+    dir_create(install_dir)
+    run_install <- TRUE
+  }  
+  if(force) run_install <- TRUE
+  
+  if(run_install) {
+    if(!file_exists(pom_path)) run_pom <- TRUE
+    if(force) run_pom <- TRUE
+    message("+------ Download files exist, skipping")
+  } else {
+    message("+------ Installation exists, skipping")
+  }
   
   if(run_pom) {
-    message("Downloading dependencies")
+    cat("+------ Downloading dependencies\n")
     args_get_pom <- list(
       mvn,
       c(
@@ -192,19 +222,10 @@ maven_download_jars <- function(dependency,
       maven_local_repo = maven_local_repo, 
       error_message = "Installation failed. Can't download pom for "
       ) 
-    } else {
-      message("Dependencies already downloaded, skipping.\nUse force=TRUE to ignore and re-download")
-    }
+    } 
 
-  run_install <- FALSE
-  if(!dir_exists(install_dir)) {
-    dir_create(install_dir)
-    run_install <- TRUE
-  }  
-  if(force) run_install <- TRUE
-  
   if(run_install) {
-    message("Installing dependencies")
+    cat("+------ Installing dependencies\n")
     args_get_artifact <- list(
       mvn,
       c(
@@ -238,9 +259,7 @@ maven_download_jars <- function(dependency,
       maven_local_repo = maven_local_repo, 
       error_message = "Installation failed. Can't copy dependencies for "
     )
-  } else {
-    message("Dependencies already copied to installation folder, skipping\nUse force=TRUE to ignore and re-install")
-  }
+  } 
   
 }
 
