@@ -1,17 +1,64 @@
 #' Install MLeap runtime
 #'
-#' @param dir (Optional) Directory to save the jars
-#' @param version Version of MLeap to install, defaults to the latest version tested with this package.
+#' @param dir Directory to save the jars. Defaults to what is processed by `mleap_session()`.
+#' @param mleap_version Version of MLeap to install.  Defaults to what is processed by `mleap_session()`.
+#' @param scala_version Version of Scala to match to the MLeap version. It defaults to 'auto'.
+#' If 'auto', the installation process will determine the most recent version of Scala
+#' to use available for the requested MLeap version. Other possible values are '2.10', 
+#' '2.11', and '2.12'.
 #' @param use_temp_cache Whether to use a temporary Maven cache directory for downloading.
 #'   Setting this to \code{TRUE} prevents Maven from creating a persistent \code{.m2/} directory.
 #'   Defaults to \code{TRUE}.
+#' @param force Force the installation. Defaults to \code{FALSE}.
 #'
 #' @examples
 #' \dontrun{
 #' install_mleap()
 #' }
 #' @export
-install_mleap <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
+#' 
+install_mleap <- function(mleap_version = mleap_defaults("version"), 
+                          force = FALSE, 
+                          scala_version = "auto",                          
+                          dir = mleap_defaults("base_folder"), 
+                          use_temp_cache = TRUE
+                          ) {
+  
+  if(scala_version == "auto") scala_version <- NULL
+
+  pkgs <- versions_get_packages(mleap_version, scala_version)
+  
+  if(!nrow(pkgs)) {
+    stop(
+      "No Maven packages found for MLeap version: ", mleap_version, 
+      " and Scala version: ", scala_version
+    )
+  } 
+  
+  if(!dir_exists(dir)) dir_create(dir)
+  
+  dir_scala <- paste0("scala-",pkgs$scala[[1]])
+  dir_mleap <- paste0("mleap-", pkgs$mleap[[1]])
+  
+  target_dir <- path(dir, paste(dir_mleap, dir_scala, sep = "_"))
+  
+  if(!dir_exists(target_dir)) dir_create(target_dir)
+  
+  pkgs %>% 
+    transpose() %>% 
+    walk(~ {
+      cat("Downloading & Installing:", .x$name, "\n")
+      name_dir <- path(target_dir, .x$name)
+      maven_download_jars(
+        dependency = .x$package, 
+        use_temp_cache = use_temp_cache,
+        force = force, 
+        install_dir = name_dir
+        )
+    })
+  
+}
+install_mleap_old <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
   version <- version %||% .globals$default_mleap_version
 
   if (mleap_found(version = version, path = dir)) {
@@ -128,7 +175,8 @@ maven_download_jars <- function(dependency,
                                 mvn = resolve_maven_path(), 
                                 install_dir = "test_dir", 
                                 use_temp_cache = TRUE, 
-                                temp_dir = "temp_dir"
+                                temp_dir = "temp_dir",
+                                force = FALSE
                                 ) {
   
   temp_dir <- path_abs(path(temp_dir, "mleap_maven"))
@@ -143,8 +191,20 @@ maven_download_jars <- function(dependency,
   repo <- get_session_defaults("installation", "maven", "repo")
 
   pom_dir <- path(temp_dir, "pom_files")
+  if(!dir_exists(pom_dir)) dir_create(pom_dir)
   
-    if(!dir_exists(pom_dir)) dir_create(pom_dir) {
+  pom_path <- path(
+    pom_dir,
+    paste0(strsplit(dependency, ":")[[1]][2:3], collapse = "-"), 
+    ext = "pom"
+  )
+  
+  run_pom <- FALSE
+  if(!file_exists(pom_path)) run_pom <- TRUE
+  if(force) run_pom <- TRUE
+  
+  if(run_pom) {
+    message("Downloading dependencies")
     args_get_pom <- list(
       mvn,
       c(
@@ -161,48 +221,53 @@ maven_download_jars <- function(dependency,
       error_message = "Installation failed. Can't download pom for "
       ) 
     } else {
-      message("POM folder already exists, skipping")
+      message("Dependencies already downloaded, skipping.\nUse force=TRUE to ignore and re-download")
     }
 
-  if(!dir_exists(install_dir)) dir_create(install_dir)
+  run_install <- FALSE
+  if(!dir_exists(install_dir)) {
+    dir_create(install_dir)
+    run_install <- TRUE
+  }  
+  if(force) run_install <- TRUE
   
-  args_get_artifact <- list(
-    mvn,
-    c(
-      "dependency:get",
-      paste0("-Dartifact=", dependency),
-      paste0("-Ddest=", install_dir),
-      paste0("-DremoteRepositories=", repo)
+  if(run_install) {
+    message("Installing dependencies")
+    args_get_artifact <- list(
+      mvn,
+      c(
+        "dependency:get",
+        paste0("-Dartifact=", dependency),
+        paste0("-Ddest=", install_dir),
+        paste0("-DremoteRepositories=", repo)
+      )
     )
-  )
+    
+    execute_command(
+      args = args_get_artifact, 
+      maven_local_repo = maven_local_repo, 
+      error_message = "Installation failed. Can't download dependencies for "
+    )
+    
+    args_get_deps <- list(
+      mvn,
+      c(
+        "dependency:copy-dependencies",
+        "-f",
+        pom_path,
+        paste0("-DoutputDirectory=", install_dir)
+      )
+    )
+    
+    execute_command(
+      args = args_get_deps,
+      maven_local_repo = maven_local_repo, 
+      error_message = "Installation failed. Can't copy dependencies for "
+    )
+  } else {
+    message("Dependencies already copied to installation folder, skipping\nUse force=TRUE to ignore and re-install")
+  }
   
-  execute_command(
-    args = args_get_artifact, 
-    maven_local_repo = maven_local_repo, 
-    error_message = "Installation failed. Can't download dependencies for "
-    )
-
-  pom_path <- path(
-    pom_dir,
-    paste0(strsplit(dependency, ":")[[1]][2:3], collapse = "-"), 
-    ext = "pom"
-    )
-  
-  args_get_deps <- list(
-    mvn,
-    c(
-      "dependency:copy-dependencies",
-      "-f",
-      pom_path,
-      paste0("-DoutputDirectory=", install_dir)
-    )
-  )
-  
-  execute_command(
-    args = args_get_deps,
-    maven_local_repo = maven_local_repo, 
-    error_message = "Installation failed. Can't copy dependencies for "
-    )
 }
 
 execute_command <- function(args, maven_local_repo, error_message) {

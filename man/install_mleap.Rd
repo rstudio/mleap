@@ -4,12 +4,25 @@
 \alias{install_mleap}
 \title{Install MLeap runtime}
 \usage{
-install_mleap(dir = NULL, version = NULL, use_temp_cache = TRUE)
+install_mleap(
+  mleap_version = mleap_defaults("version"),
+  force = FALSE,
+  scala_version = "auto",
+  dir = mleap_defaults("base_folder"),
+  use_temp_cache = TRUE
+)
 }
 \arguments{
-\item{dir}{(Optional) Directory to save the jars}
+\item{mleap_version}{Version of MLeap to install.  Defaults to what is processed by `mleap_session()`.}
 
-\item{version}{Version of MLeap to install, defaults to the latest version tested with this package.}
+\item{force}{Force the installation. Defaults to \code{FALSE}.}
+
+\item{scala_version}{Version of Scala to match to the MLeap version. It defaults to 'auto'.
+If 'auto', the installation process will determine the most recent version of Scala
+to use available for the requested MLeap version. Other possible values are '2.10', 
+'2.11', and '2.12'.}
+
+\item{dir}{Directory to save the jars. Defaults to what is processed by `mleap_session()`.}
 
 \item{use_temp_cache}{Whether to use a temporary Maven cache directory for downloading.
 Setting this to \code{TRUE} prevents Maven from creating a persistent \code{.m2/} directory.

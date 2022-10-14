@@ -41,7 +41,7 @@ mleap_set_session_defaults <- function(mleap_home = NULL,
   
   installation_mleap <- tibble(
     version = mleap_default_version %||% ml$version,
-    base_folder = mleap_default_folder %||% ml$base_folder %||% install_dir("mleap")
+    base_folder = mleap_default_folder %||% ml$base_folder %||% install_dir("mleap_jars")
   )
 
   vers <- versions %||% msd$versions  
@@ -99,6 +99,17 @@ get_session_defaults <- function(...) {
     msd <- msd[[eval(vars[[i]])]]
   }
   msd
+}
+
+#' Gets the processed defaults used during the MLeap session
+#' @param var Variable to extract from defaults
+#' @export
+mleap_defaults <- function(var = NULL) {
+  x <- get_session_defaults("installation", "mleap") %>% 
+    transpose() %>% 
+    flatten()
+  if(!is.null(var)) x <- x[[var]]
+  x
 }
 
 get_version_folder <- function(base_folder, version = NULL) {
