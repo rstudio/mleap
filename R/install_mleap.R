@@ -131,36 +131,7 @@ mleap_installed_versions <- function() {
 }
 
 resolve_mleap_path <- function(version = NULL) {
-  if (length(getOption("mleap.home")) && is.null(version)) {
-    return(getOption("mleap.home"))
-  }
-
-  installed_versions <- mleap_installed_versions()
-  if (nrow(installed_versions) == 0) {
-    stop("Can't find MLeap Runtime jars. Specify options(mleap.home = ...) or run install_mleap().")
-  }
-
-  version <- version %||% (installed_versions$mleap %>%
-    map(~ numeric_version(.x)) %>%
-    reduce(~ (if (.x > .y) .x else .y)) %>%
-    as.character())
-  
-  version_index <- which(version == installed_versions$mleap)[[1]]
-  
-  if (!length(version_index)) {
-    stop("MLeap version ", version, " not found.")
-  }
-
-  mleap_dir <- installed_versions$dir[[version_index]]
-
-  runtime_jars <- list.files(mleap_dir, full.names = TRUE, recursive = TRUE) %>%
-    grep("mleap-runtime", ., value = TRUE)
-
-  if (!length(runtime_jars)) {
-    stop("Can't find MLeap Runtime jars. Specify options(mleap.home = ...) or run install_mleap().")
-  }
-
-  mleap_dir
+  get_session_defaults("runtime", "mleap_home")
 }
 
 mleap_found <- function(version = NULL, path = NULL) {
@@ -304,12 +275,10 @@ command_success <- function(result) {
 load_mleap_jars <- function(version = NULL) {
     if(.globals$init_local_mleap) {
     .jinit()
-    if (!any(grepl("mleap-runtime", .jclassPath()))) {
+    if (!any(grepl("mleap", .jclassPath()))) {
       mleap_path <- resolve_mleap_path(version)
-      .jpackage(
-        "mleap",
-        morePaths = list.files(mleap_path, full.names = TRUE)
-      )    
+      jar_files <- dir_ls(mleap_path, type = "file", glob = "*.jar", recurse = TRUE)
+      .jpackage("mleap", morePaths = jar_files)    
     }
     .globals$init_local_mleap <- FALSE 
   }
