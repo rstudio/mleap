@@ -79,25 +79,20 @@ install_dir <- function(dir_name) {
 
 resolve_maven_path <- function() {
   maven_dir <- get_session_defaults("runtime", "maven_home")
-  if(dir_exists(maven_dir)) {
-    maven_path <- maven_dir |> 
-      dir_ls(recurse = TRUE, type = "file") |>
-      grep("/bin/mvn$", ., value = TRUE) |>
-      path() |> 
-      head(1)  
-  } else {
-    maven_path <- character(0)
-  }
+  maven_files <- dir_ls(maven_dir, recurse = TRUE, type = "file")
   
+  if (identical(.Platform$OS.type, "windows")) {
+    mvn_cmd <- "mvn.cmd"
+    } else {
+    mvn_cmd <- "mvn"
+    }
+  
+  maven_path <- maven_files[path_file(maven_files) == mvn_cmd]
   
   if (!length(maven_path)) {
     stop("Can't find Maven. Specify options(maven.home = ...) or run install_maven().",
       call. = FALSE
     )
-  }
-
-  if (identical(.Platform$OS.type, "windows")) {
-    maven_path <- paste0(maven_path, ".cmd")
   }
 
   maven_path
