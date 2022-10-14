@@ -105,8 +105,8 @@ get_session_defaults <- function(...) {
 #' @param var Variable to extract from defaults
 #' @export
 mleap_defaults <- function(var = NULL) {
-  x <- get_session_defaults("installation", "mleap") %>% 
-    transpose() %>% 
+  x <- get_session_defaults("installation", "mleap") |> 
+    transpose() |> 
     flatten()
   if(!is.null(var)) x <- x[[var]]
   x
@@ -141,8 +141,8 @@ get_maven_download_link <- function(version) {
 }
 
 finalize_versions <- function(versions) {
-  versions %>% 
-    transpose() %>% 
+  versions |> 
+    transpose() |> 
     map(
       ~ {
         x <- .x
@@ -152,7 +152,7 @@ finalize_versions <- function(versions) {
         x$jar_name <- sprintf("mleap-%s-%s.jar", x$spark_major, x$scala)
         x
       }
-    ) %>% 
-    map(~ as_tibble(.x)) %>%
+    ) |> 
+    map(~ as_tibble(.x)) |>
     reduce(function(x, y) rbind(x, y))    
 }

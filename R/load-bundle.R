@@ -1,18 +1,3 @@
-#' Loads an MLeap bundle into Spark
-#'
-#' @param sc Spark connection
-#' @param path Path to the exported bundle zip file.
-#' @return An Spark ML Pipeline model object.
-#'
-#' @export
-ml_read_bundle <- function(sc, path) {
-  x <- uri(path_abs(path))
-  obj <- invoke_static(sc, "mleap.Main", "importZipTransformer", x)
-  ml_call_constructor(obj)
-}
-
-
-
 #' Loads an MLeap bundle
 #'
 #' @param path Path to the exported bundle zip file.
@@ -64,13 +49,13 @@ retrieve_model_schema <- function(jobj) {
   ct <- ct$`MODULE$`$apply(input_schema$head()$getClass())
 
   get_schema_tbl <- function(schema, ct, io) {
-    df <- schema$toArray(ct) %>%
-      as.list() %>%
+    df <- schema$toArray(ct) |>
+      as.list() |>
       map(function(x) {
         data_type <- x$dataType()
         base_type <- data_type$base()$toString()
         dimensions <- tryCatch(
-          data_type$dimensions()$get()$toIterable()$array() %>%
+          data_type$dimensions()$get()$toIterable()$array() |>
             paste0("(", ., ")", collapse = ", "),
           error = function(e) NA_character_
         )
@@ -81,10 +66,10 @@ retrieve_model_schema <- function(jobj) {
           is_nullable,
           dimensions
         )
-      }) %>%
-      transpose() %>%
-      set_names(c("name", "type", "nullable", "dimension")) %>%
-      map(unlist) %>%
+      }) |>
+      transpose() |>
+      set_names(c("name", "type", "nullable", "dimension")) |>
+      map(unlist) |>
       as_tibble()
 
     df$io <- io

@@ -44,8 +44,8 @@ install_mleap <- function(mleap_version = mleap_defaults("version"),
   
   if(!dir_exists(target_dir)) dir_create(target_dir)
   
-  pkgs %>% 
-    transpose() %>% 
+  pkgs |> 
+    transpose() |> 
     walk(~ {
       cat("Downloading & Installing:", .x$name, "\n")
       name_dir <- path(target_dir, .x$name)
@@ -119,14 +119,14 @@ install_mleap_old <- function(dir = NULL, version = NULL, use_temp_cache = TRUE)
 mleap_installed_versions <- function() {
   mleap_dir <- .globals$mleap_dir %||% install_dir("mleap")
   dirs <- c(getOption("mleap.home"), list.files(mleap_dir, full.names = TRUE))
-  versions <- dirs %>%
+  versions <- dirs |>
     map_chr(~ gsub("mleap-", "", basename(.x)))
 
   data.frame(
     mleap = versions, 
     dir = dirs,
     stringsAsFactors = FALSE
-  ) %>%
+  ) |>
     unique()
 }
 
@@ -188,6 +188,7 @@ maven_download_jars <- function(dependency,
   
     result_get_pom <- execute_command(
       args = args_get_pom, 
+      dependency = dependency,
       maven_local_repo = maven_local_repo, 
       error_message = "Installation failed. Can't download pom for "
       ) 
@@ -216,6 +217,7 @@ maven_download_jars <- function(dependency,
     
     execute_command(
       args = args_get_artifact, 
+      dependency = dependency,
       maven_local_repo = maven_local_repo, 
       error_message = "Installation failed. Can't download dependencies for "
     )
@@ -232,6 +234,7 @@ maven_download_jars <- function(dependency,
     
     execute_command(
       args = args_get_deps,
+      dependency = dependency,
       maven_local_repo = maven_local_repo, 
       error_message = "Installation failed. Can't copy dependencies for "
     )
@@ -241,7 +244,7 @@ maven_download_jars <- function(dependency,
   
 }
 
-execute_command <- function(args, maven_local_repo, error_message) {
+execute_command <- function(args, dependency, maven_local_repo, error_message) {
   if (!is.null(maven_local_repo)) {
     args[[2]] <- c(
       args[[2]],

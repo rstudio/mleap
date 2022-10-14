@@ -33,9 +33,9 @@ ui <- fluidPage(
 server <- function(input, output) {
   
     # prediction <- reactive({
-    #   tibble(review = input$review, score = "") %>%
-    #     mleap_transform(sff_mleap_model, .) %>%
-    #     transpose() %>%
+    #   tibble(review = input$review, score = "") |>
+    #     mleap_transform(sff_mleap_model, .) |>
+    #     transpose() |>
     #     map(~
     #           list(
     #             prediction = ifelse(.x$prediction == 0, "Great", "Other"),
@@ -47,9 +47,9 @@ server <- function(input, output) {
 
     output$prediction <- renderText({
       
-        tibble(review = input$review, score = "") %>%
-          mleap_transform(sff_mleap_model, .) %>% 
-          dplyr::glimpse() %>% 
+        tibble(review = input$review, score = "") |>
+          mleap_transform(sff_mleap_model, .) |> 
+          dplyr::glimpse() |> 
           capture.output()
       
       #out <- prediction()

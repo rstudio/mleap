@@ -8,7 +8,7 @@ mleap_dep_versions_list <- function(spark_version = NULL,
                                     scala_version = NULL,
                                     mleap_version = NULL
                                     ) {
-  prep_ver <- get_session_defaults("versions") %>% 
+  prep_ver <- get_session_defaults("versions") |> 
     transpose()
 
   if (!is.null(spark_version)) {

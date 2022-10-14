@@ -12,7 +12,7 @@ mleap_transform <- function(model, data) {
 
   input_schema <- model$schema[model$schema$io == "input", ]
 
-  types <- columns %>%
+  types <- columns |>
     map_chr(~ input_schema$type[[match(.x, input_schema$name)]])
 
 
@@ -21,27 +21,27 @@ mleap_transform <- function(model, data) {
   schema <- list(fields = map2(
     columns, types, ~ list(name = .x, type = .y)
   ))
-  rows <- data %>%
-    transpose() %>%
+  rows <- data |>
+    transpose() |>
     map(unname)
 
-  data_json <- list(schema = schema, rows = rows) %>%
+  data_json <- list(schema = schema, rows = rows) |>
     toJSON(auto_unbox = TRUE)
 
-  data_bytes <- .jnew("scala.io.Source$") %>%
-    .jcall("Lscala/io/Source;", "fromString", as.character(data_json)) %>%
-    .jcall("S", "mkString", evalString = FALSE) %>%
+  data_bytes <- .jnew("scala.io.Source$") |>
+    .jcall("Lscala/io/Source;", "fromString", as.character(data_json)) |>
+    .jcall("S", "mkString", evalString = FALSE) |>
     .jcall("[B", "getBytes", evalArray = FALSE)
 
   frame_reader <- .jnew("ml.combust.mleap.runtime.serialization.FrameReader$")
-  frame_reader <- frame_reader %>%
+  frame_reader <- frame_reader |>
     .jcall(
       "Lml/combust/mleap/runtime/serialization/FrameReader;", "apply",
       .jcall(frame_reader, "S", "apply$default$1"),
       .jcall(frame_reader, "Lscala/Option;", "apply$default$2")
     )
 
-  frame <- frame_reader %>%
+  frame <- frame_reader |>
     .jcall(
       "Lscala/util/Try;", "fromBytes",
       data_bytes,
@@ -62,19 +62,19 @@ mleap_transform <- function(model, data) {
   )
 
   parse_mleap_json <- function(x) {
-    col_names <- x$schema$fields %>%
+    col_names <- x$schema$fields |>
       map_chr("name")
 
-    x$rows %>%
-      transpose() %>%
-      set_names(col_names) %>%
-      map_if(~ !is.list(.x[[1]]), unlist) %>%
+    x$rows |>
+      transpose() |>
+      set_names(col_names) |>
+      map_if(~ !is.list(.x[[1]]), unlist) |>
       as_tibble()
   }
 
-  frame_writer$toBytes(frame_writer$`toBytes$default$1`())$get() %>%
-    rawToChar() %>%
-    fromJSON(simplifyVector = FALSE) %>%
+  frame_writer$toBytes(frame_writer$`toBytes$default$1`())$get() |>
+    rawToChar() |>
+    fromJSON(simplifyVector = FALSE) |>
     parse_mleap_json()
 }
 

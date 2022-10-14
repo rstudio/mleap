@@ -16,24 +16,24 @@ package_roots <- c("bundle", "mleap")
 base_urls <- paste0(maven_repo, paste0(combust_root, collapse = "/"), "/", package_roots)
 
 get_links <- function(x)  {
-  links <- curl(x) %>%
-    read_html() %>%
-    html_elements("a") %>%
+  links <- curl(x) |>
+    read_html() |>
+    html_elements("a") |>
     html_attr("href")
   ret <- links[links != "../"]
   ret <- ret[!str_detect(ret, "maven-metadata")]
   ret
 }
 
-base_links <- base_urls %>% 
-  map(~ paste(.x, get_links(.x), sep = "/")) %>% 
+base_links <- base_urls |> 
+  map(~ paste(.x, get_links(.x), sep = "/")) |> 
   flatten() 
 
-all_links <- base_links %>% 
-  map(get_links) %>% 
+all_links <- base_links |> 
+  map(get_links) |> 
   set_names(base_links)
 
-mleap_packages <- all_links %>% 
+mleap_packages <- all_links |> 
   imap_dfr(~ {
     base_name <- .y
     for(i in seq_along(base_urls)) {
@@ -41,9 +41,9 @@ mleap_packages <- all_links %>%
     }
     pkg_name <- str_remove_all(base_name, "/")
     name_split <- str_split(pkg_name, "_")[[1]]
-    maven <- .y %>% 
-      str_remove(maven_repo) %>% 
-      str_remove(base_name) %>% 
+    maven <- .y |> 
+      str_remove(maven_repo) |> 
+      str_remove(base_name) |> 
       str_replace_all("/", ".")
     
     mleap <- str_remove(.x, "/")
@@ -55,11 +55,11 @@ mleap_packages <- all_links %>%
     )
   }) 
 
-mleap_versions <- mleap_packages %>% 
-  group_by(mleap, scala) %>% 
-  summarise() %>% 
-  group_by(mleap) %>% 
-  mutate(default = ifelse(scala == max(scala), "yes", "no")) %>% 
+mleap_versions <- mleap_packages |> 
+  group_by(mleap, scala) |> 
+  summarise() |> 
+  group_by(mleap) |> 
+  mutate(default = ifelse(scala == max(scala), "yes", "no")) |> 
   ungroup()
 
 mleap_defaults <- mleap_versions[mleap_versions$default == "yes", ]
