@@ -7,7 +7,7 @@ library(readr)
 
 devtools::load_all()
 
-maven_repo <- mleap_get_session_defaults("installation", "maven", "repo")
+maven_repo <- get_session_defaults("installation", "maven", "repo")
 
 combust_root <- c("ml", "combust")
 

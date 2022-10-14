@@ -124,46 +124,48 @@ mleap_found <- function(version = NULL, path = NULL) {
   }
 }
 
-maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
-  temp_dir <- tempdir()
+maven_download_jars <- function(dependency, 
+                                mvn = resolve_maven_path(), 
+                                install_dir = "test_dir", 
+                                use_temp_cache = TRUE, 
+                                temp_dir = "temp_dir"
+                                ) {
+  
+  temp_dir <- path_abs(path(temp_dir, "mleap_maven"))
+  install_dir <- path_abs(install_dir)
 
   maven_local_repo <- if (use_temp_cache) {
-    temp_repo <- paste0(temp_dir, "/local_repo")
+    temp_repo <- path(temp_dir, "temp_cache", dependency)
     dir_create(temp_repo)
     temp_repo
   }
 
-  artifact_version <- dependency %>%
-    strsplit(":") %>%
-    unlist() %>%
-    `[`(2:3)
+  repo <- get_session_defaults("installation", "maven", "repo")
 
-  repo <- mleap_get_session_defaults("installation", "maven", "repo")
-
-  args_get_pom <- list(
-    mvn,
-    c(
-      "dependency:get",
-      paste0("-Dartifact=", dependency, ":pom"),
-      paste0("-Ddest=", temp_dir),
-      paste0("-DremoteRepositories=", repo)
+  pom_dir <- path(temp_dir, "pom_files")
+  
+    if(!dir_exists(pom_dir)) dir_create(pom_dir) {
+    args_get_pom <- list(
+      mvn,
+      c(
+        "dependency:get",
+        paste0("-Dartifact=", dependency, ":pom"),
+        paste0("-Ddest=", pom_dir),
+        paste0("-DremoteRepositories=", repo)
+      )
     )
-  )
+  
+    result_get_pom <- execute_command(
+      args = args_get_pom, 
+      maven_local_repo = maven_local_repo, 
+      error_message = "Installation failed. Can't download pom for "
+      ) 
+    } else {
+      message("POM folder already exists, skipping")
+    }
 
-  result_get_pom <- execute_command(args_get_pom, maven_local_repo)
-
-  if (!command_success(result_get_pom)) {
-    stop(paste0("Installation failed. Can't download pom for ", dependency),
-      "\n",
-      paste0(result_get_pom, collapse = "\n"),
-      call. = FALSE
-    )
-  }
-
-  pom_path <- file.path(
-    temp_dir, paste0(artifact_version[[1]], "-", artifact_version[[2]], ".pom")
-  )
-
+  if(!dir_exists(install_dir)) dir_create(install_dir)
+  
   args_get_artifact <- list(
     mvn,
     c(
@@ -173,16 +175,19 @@ maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
       paste0("-DremoteRepositories=", repo)
     )
   )
-  result_get_artifact <- execute_command(args_get_artifact, maven_local_repo)
-
-  if (!command_success(result_get_artifact)) {
-    stop(paste0("Installation failed. Can't download dependencies for ", dependency),
-      "\n",
-      paste0(result_get_artifact, collapse = "\n"),
-      call. = FALSE
+  
+  execute_command(
+    args = args_get_artifact, 
+    maven_local_repo = maven_local_repo, 
+    error_message = "Installation failed. Can't download dependencies for "
     )
-  }
 
+  pom_path <- path(
+    pom_dir,
+    paste0(strsplit(dependency, ":")[[1]][2:3], collapse = "-"), 
+    ext = "pom"
+    )
+  
   args_get_deps <- list(
     mvn,
     c(
@@ -192,16 +197,15 @@ maven_download_jars <- function(mvn, dependency, install_dir, use_temp_cache) {
       paste0("-DoutputDirectory=", install_dir)
     )
   )
-  result_get_deps <- execute_command(args_get_deps, maven_local_repo)
-
-  if (!command_success(result_get_deps)) {
-    stop(paste0("Installation failed. Can't copy dependencies for ", dependency),
-      call. = FALSE
+  
+  execute_command(
+    args = args_get_deps,
+    maven_local_repo = maven_local_repo, 
+    error_message = "Installation failed. Can't copy dependencies for "
     )
-  }
 }
 
-execute_command <- function(args, maven_local_repo) {
+execute_command <- function(args, maven_local_repo, error_message) {
   if (!is.null(maven_local_repo)) {
     args[[2]] <- c(
       args[[2]],
@@ -218,7 +222,14 @@ execute_command <- function(args, maven_local_repo) {
     result <- do.call(system2, c(args, stdout = TRUE, stderr = TRUE))
     if (is.null(attr(result, "status"))) attr(result, "status") <- 0L
   }
-  result
+  
+  if (!identical(attr(result, "status"), 0L)) {
+    stop(paste0(error_message, dependency),
+         "\n",
+         paste0(result, collapse = "\n"),
+         call. = FALSE
+    )}
+  invisible((NULL))
 }
 
 command_success <- function(result) {

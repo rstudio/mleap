@@ -23,5 +23,5 @@ versions_get_packages <- function(mleap, scala = NULL) {
   x <- versions_packages()
   ret <- x[x$mleap == mleap, ]
   ret <- ret[ret$scala == scala, ]
-  ret$package
+  ret[, c("name", "package")]
 }

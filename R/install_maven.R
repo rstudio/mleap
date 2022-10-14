@@ -18,7 +18,7 @@ install_maven <- function(dir = NULL, version = NULL) {
     return(invisible(NULL))
   }
 
-  def_version <- mleap_get_session_defaults("installation", "maven", "version")
+  def_version <- get_session_defaults("installation", "maven", "version")
   version <- version %||% def_version
 
   maven_dir <- dir %||% install_dir("maven")
@@ -78,7 +78,7 @@ install_dir <- function(dir_name) {
 }
 
 resolve_maven_path <- function() {
-  maven_dir <- mleap_get_session_defaults("runtime", "maven_home")
+  maven_dir <- get_session_defaults("runtime", "maven_home")
   if(dir_exists(maven_dir)) {
     maven_path <- maven_dir %>% 
       dir_ls(recurse = TRUE, type = "file") %>%

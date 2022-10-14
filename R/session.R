@@ -88,7 +88,7 @@ mleap_set_session_defaults <- function(mleap_home = NULL,
 
 
 
-mleap_get_session_defaults <- function(...) {
+get_session_defaults <- function(...) {
   vars <- enexprs(...)
   msd <- .mleap_globals$session_defaults 
   if(is.null(msd)) {
@@ -123,7 +123,7 @@ get_apache_mirror <- function(apache_portal = NULL) {
 }
 
 get_maven_download_link <- function(version) {
-  sdf <- mleap_get_session_defaults()
+  sdf <- get_session_defaults()
   mir <- sdf$installation$maven$apache_mirror_url
   dwp <- gsub("\\$version", version, sdf$installation$maven$download_path)
   paste0(mir, dwp)
