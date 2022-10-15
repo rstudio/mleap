@@ -8,8 +8,9 @@
 #' @seealso [mleap_load_bundle()]
 #' @export
 mleap_transform <- function(model, data) {
+  mleap_verify()
   columns <- colnames(data)
-
+  
   input_schema <- model$schema[model$schema$io == "input", ]
 
   types <- columns |>

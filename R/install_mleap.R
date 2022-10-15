@@ -42,9 +42,9 @@ install_mleap <- function(mleap_version = mleap_defaults("version"),
   }
   
   if(force) {
-    cat("+-- force=FALSE - Will skip anything already installed\n")
-  } else {
     cat("+-- force=TRUE - Will replace previous installations\n")
+  } else {
+    cat("+-- force=FALSE - Will skip anything already installed\n")
   }
   
   cat("+-- Number of identified dependencies:", nrow_pkgs, "\n")
@@ -76,57 +76,6 @@ install_mleap <- function(mleap_version = mleap_defaults("version"),
     })
   
 }
-install_mleap_old <- function(dir = NULL, version = NULL, use_temp_cache = TRUE) {
-  version <- version %||% .globals$default_mleap_version
-
-  if (mleap_found(version = version, path = dir)) {
-    message("MLeap Runtime version ", version, " already installed.")
-    return(invisible(NULL))
-  }
-
-  version_deps <- mleap_dep_versions_list(mleap_version = version)[[1]]
-
-  mvn <- resolve_maven_path()
-
-  if (!length(mvn)) stop("MLeap installation failed. Maven must be installed.")
-
-
-  mleap_folder <- paste0("mleap-", version)
-
-  if (!is.null(dir)) {
-    mleap_dir <- normalizePath(
-      file.path(dir, mleap_folder),
-      mustWork = FALSE
-    )
-  } else {
-    mleap_dir <- install_dir(path("mleap", mleap_folder))
-  }
-
-  if (!dir_exists(mleap_dir)) dir_create(mleap_dir, recurse = TRUE)
-
-  message("Downloading MLeap Runtime ", version, "...")
-
-  tryCatch(
-    maven_download_jars(
-      mvn,
-      version_deps$maven_mleap,
-      mleap_dir,
-      use_temp_cache = use_temp_cache
-    ),
-    error = function(e) {
-      dir_delete(mleap_dir)
-      stop(e)
-    }
-  )
-
-  .globals$mleap_dir <- dirname(mleap_dir)
-
-  load_mleap_jars(version)
-
-  message("MLeap Runtime version ", version, " installation succeeded.")
-
-  invisible(NULL)
-}
 
 #' Find existing MLeap installations
 #'
@@ -135,17 +84,37 @@ install_mleap_old <- function(dir = NULL, version = NULL, use_temp_cache = TRUE)
 #'
 #' @export
 mleap_installed_versions <- function() {
-  mleap_dir <- .globals$mleap_dir %||% install_dir("mleap")
-  dirs <- c(getOption("mleap.home"), list.files(mleap_dir, full.names = TRUE))
-  versions <- dirs |>
-    map_chr(~ gsub("mleap-", "", basename(.x)))
-
-  data.frame(
-    mleap = versions, 
-    dir = dirs,
-    stringsAsFactors = FALSE
-  ) |>
-    unique()
+  if(get_session_defaults("runtime", "mleap_found")) {
+    base_folder <- get_session_defaults("runtime", "mleap_home")
+    dirs <- dir_ls(base_folder, type = "directory")
+    dir_names <- path_file(dirs)
+    mleap_folders <- dir_names[grepl("mleap-", dir_names)]
+    found <- FALSE
+    if(length(mleap_folders)) {
+      scala_folders <- dir_names[grepl("scala-", dir_names)]  
+      ret <- NULL
+      if(length(scala_folders)) {
+        found <- TRUE
+        for(i in seq_along(scala_folders)) {
+          curr_folder <- scala_folders[i]
+          split1 <- strsplit(curr_folder, "_")[[1]]
+          split2 <- strsplit(split1, "-")
+          mleap <- split2[[1]][[2]]
+          scala <- split2[[2]][[2]]
+          ct <- tibble(
+            mleap = mleap,
+            scala = scala,
+            folder = path(base_folder, curr_folder)
+          )
+          ret <- rbind(ret, ct)
+        }
+        ret
+        
+      }
+    }  
+  } else {
+   tibble(mleap = character(0), scala = character(0), folder = character(0)) 
+  }
 }
 
 resolve_mleap_path <- function(version = NULL) {
@@ -153,10 +122,18 @@ resolve_mleap_path <- function(version = NULL) {
 }
 
 mleap_found <- function(version = NULL, path = NULL) {
-  if(!is.null(path)) {
-    dir_exists(path)
-  } else {
-    if (length(safely(resolve_mleap_path)(version)$result)) TRUE else FALSE
+  get_session_defaults("runtime", "mleap_found")
+}
+
+mleap_verify <- function() {
+  if(!mleap_found()) {
+    msg <- paste("No MLeap installation found.",
+                   "Use install_mleap() to install, or",
+                   "point mleap to an installation folder",
+                   "using options('mleap_home' = '{location}')",
+                   sep = "\n"
+                   )
+    stop(msg)
   }
 }
 
@@ -190,6 +167,7 @@ maven_download_jars <- function(dependency,
   
   run_pom <- FALSE
   run_install <- FALSE
+  
   if(!dir_exists(install_dir)) {
     dir_create(install_dir)
     run_install <- TRUE
@@ -199,7 +177,7 @@ maven_download_jars <- function(dependency,
   if(run_install) {
     if(!file_exists(pom_path)) run_pom <- TRUE
     if(force) run_pom <- TRUE
-    message("+------ Download files exist, skipping")
+    if(!run_pom) message("+------ Download files exist, skipping")
   } else {
     message("+------ Installation exists, skipping")
   }
@@ -292,16 +270,4 @@ execute_command <- function(args, dependency, maven_local_repo, error_message) {
 
 command_success <- function(result) {
   identical(attr(result, "status"), 0L)
-}
-
-load_mleap_jars <- function(version = NULL) {
-    if(.globals$init_local_mleap) {
-    .jinit()
-    if (!any(grepl("mleap", .jclassPath()))) {
-      mleap_path <- resolve_mleap_path(version)
-      jar_files <- dir_ls(mleap_path, type = "file", glob = "*.jar", recurse = TRUE)
-      .jpackage("mleap", morePaths = jar_files)    
-    }
-    .globals$init_local_mleap <- FALSE 
-  }
 }

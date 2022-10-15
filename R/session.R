@@ -59,26 +59,34 @@ mleap_set_session_defaults <- function(mleap_home = NULL,
   if(is.null(maven_home)) maven_home <- "{{ No Maven installation found }}"
   
   mleap_home <- mleap_home %||% getOption("mleap.home") 
+  mleap_found <- TRUE
   
   if(is.null(mleap_home)) {
-    bf <- installation_mleap$base_folder
-    vf <- get_version_folder(bf)
-    if(!is.null(vf)) mleap_home <- path(bf, vf)
+    if(dir_exists(installation_mleap$base_folder)) {
+      mleap_home <- installation_mleap$base_folder
+    }
   }
   
-  if(is.null(mleap_home)) mleap_home <- "{{ No MLeap installation found }}"
+  if(!is.null(mleap_home)) {
+    mleap_contents <- dir_ls(mleap_home, recurse = TRUE, glob = "*.jar")
+    if(!length(mleap_contents)) mleap_home <- NULL
+  }
   
+  if(is.null(mleap_home)) {
+    mleap_home <- ""
+    mleap_found <- FALSE
+  } 
   
   ret <- list(
     runtime = list(
       mleap_home = mleap_home,
+      mleap_found = mleap_found,
       maven_home = maven_home
     ),
     installation = list(
       mleap = installation_mleap,
       maven = installation_maven
-    ),
-    versions = all_versions
+    )
   )
   
   .mleap_globals$session_defaults  <- ret

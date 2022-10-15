@@ -5,9 +5,7 @@
 #'
 #' @export
 mleap_load_bundle <- function(path) {
-
-  load_mleap_jars() 
-
+  mleap_verify()
   ctx_builder <- .jnew("ml.combust.mleap.runtime.javadsl.ContextBuilder")
   ctx <- .jcall(
     ctx_builder, 

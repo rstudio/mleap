@@ -1,14 +1,20 @@
+.onLoad <- function(libname, pkgname) {
+  load_mleap_jars()
+}
+
+
 .globals <- new.env(parent = emptyenv())
-
-json_config <- system.file(file.path("extdata", "config.json"), package = "mleap")
-config <- jsonlite::fromJSON(json_config)
-
-.globals$default_maven_version <- config$setup$maven_version
-.globals$default_mleap_version <- config$setup$mleap_version
-.globals$default_maven_repo <- config$setup$maven_repo
-.globals$maven_dir <- NULL
-.globals$mleap_dir <- NULL
-
 .globals$init_local_mleap <- TRUE
-
-globalVariables(".")
+load_mleap_jars <- function() {
+  if(.globals$init_local_mleap) {
+    if(mleap_found()) {
+      .jinit()
+      if (!any(grepl("mleap", .jclassPath()))) {
+        mleap_path <- resolve_mleap_path()
+        jar_files <- dir_ls(mleap_path, type = "file", glob = "*.jar", recurse = TRUE)
+        .jpackage("mleap", morePaths = jar_files)    
+      }
+      .globals$init_local_mleap <- FALSE 
+    }
+  }
+}
