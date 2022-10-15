@@ -79,7 +79,6 @@ mleap_transform <- function(model, data) {
     parse_mleap_json()
 }
 
-# no covered because uid different each run
 #' @export
 print.mleap_transformer <- function(x, ...) { # nocov start
   cat("MLeap Transformer\n")
@@ -88,4 +87,3 @@ print.mleap_transformer <- function(x, ...) { # nocov start
   cat(paste0("  ", "Format: ", x$format), "\n")
   cat(paste0("  ", "MLeap Version: ", x$mleap_version))
 }
-# nocov end

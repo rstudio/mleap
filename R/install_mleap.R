@@ -16,7 +16,6 @@
 #' install_mleap()
 #' }
 #' @export
-#' 
 install_mleap <- function(mleap_version = mleap_defaults("version"), 
                           force = FALSE, 
                           scala_version = "auto",                          
@@ -266,8 +265,4 @@ execute_command <- function(args, dependency, maven_local_repo, error_message) {
          call. = FALSE
     )}
   invisible((NULL))
-}
-
-command_success <- function(result) {
-  identical(attr(result, "status"), 0L)
 }

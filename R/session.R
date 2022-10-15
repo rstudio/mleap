@@ -43,10 +43,6 @@ mleap_set_session_defaults <- function(mleap_home = NULL,
     version = mleap_default_version %||% ml$version,
     base_folder = mleap_default_folder %||% ml$base_folder %||% install_dir("mleap_jars")
   )
-
-  vers <- versions %||% msd$versions  
-  
-  all_versions <- finalize_versions(vers)
   
   maven_home <- maven_home %||% getOption("maven.home") 
     
@@ -93,8 +89,6 @@ mleap_set_session_defaults <- function(mleap_home = NULL,
   
   invisible(NULL)
 }
-
-
 
 get_session_defaults <- function(...) {
   vars <- enexprs(...)
@@ -148,19 +142,3 @@ get_maven_download_link <- function(version) {
   paste0(mir, dwp)
 }
 
-finalize_versions <- function(versions) {
-  versions |> 
-    transpose() |> 
-    map(
-      ~ {
-        x <- .x
-        x$maven_spark <- sprintf("ml.combust.mleap:mleap-spark_%s:%s", x$scala, x$mleap)
-        x$maven_mleap <- sprintf("ml.combust.mleap:mleap-runtime_%s:%s", x$scala, x$mleap)
-        x$spark_major <- substr(x$spark, 1, 3)
-        x$jar_name <- sprintf("mleap-%s-%s.jar", x$spark_major, x$scala)
-        x
-      }
-    ) |> 
-    map(~ as_tibble(.x)) |>
-    reduce(function(x, y) rbind(x, y))    
-}
