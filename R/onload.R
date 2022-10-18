@@ -1,8 +1,3 @@
-.onLoad <- function(libname, pkgname) {
-  load_mleap_jars()
-}
-
-
 .globals <- new.env(parent = emptyenv())
 .globals$init_local_mleap <- TRUE
 load_mleap_jars <- function() {

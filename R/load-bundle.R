@@ -6,6 +6,7 @@
 #' @export
 mleap_load_bundle <- function(path) {
   mleap_verify()
+  load_mleap_jars()
   ctx_builder <- .jnew("ml.combust.mleap.runtime.javadsl.ContextBuilder")
   ctx <- .jcall(
     ctx_builder, 
@@ -78,4 +79,15 @@ retrieve_model_schema <- function(jobj) {
     get_schema_tbl(input_schema, ct, "input"),
     get_schema_tbl(output_schema, ct, "output")
   )
+}
+
+bundle_info <- function(path) {
+  json_file <- "bundle.json"
+  if(is_dir(json_file)) {
+    target <- path
+  } else {
+    target <- path(tempdir(), "bundles")  
+    unzip(path, json_file, exdir = target, overwrite = TRUE)
+  }
+  jsonlite::read_json(path(target, json_file))
 }
