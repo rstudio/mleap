@@ -51,7 +51,7 @@ install_maven <- function(dir = NULL, version = NULL) {
   if (!identical(status, 0L)) stop("Maven installation failed.", call. = FALSE)
 
   file_delete(maven_path)
-  mleap_set_session_defaults(maven_home = maven_dir) 
+  set_session_defaults(maven_home = maven_dir) 
   message("Maven installation succeeded.")
   invisible(NULL)
 }

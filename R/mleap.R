@@ -5,6 +5,7 @@
 #' @importFrom jsonlite fromJSON toJSON
 #' @importFrom rlang enquos `!!` `!!!` enexprs
 #' @importFrom digest digest
+#' @importFrom utils unzip
 #' @import tibble
 #' @import fs
 NULL

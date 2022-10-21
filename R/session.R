@@ -2,18 +2,13 @@
 
 .mleap_globals$session_defaults <- NULL
 
-mleap_set_session_defaults <- function(mleap_home = NULL,
-                                       maven_home = NULL,
-                                       apache_mirror_url = NULL,
-                                       maven_repo = NULL,
-                                       apache_mirror_selection = NULL,
-                                       maven_download_path = NULL,
-                                       mleap_default_version = NULL, 
-                                       mleap_default_folder = NULL, 
-                                       maven_default_version = NULL,
-                                       maven_default_folder = NULL,
-                                       versions = NULL
-                                       ) {
+set_session_defaults <- function(mleap_home = NULL, mleap_version = NULL,
+                                 maven_home = NULL, apache_mirror_url = NULL,
+                                 maven_repo = NULL, apache_mirror_selection = NULL,
+                                 maven_download_path = NULL, mleap_default_version = NULL, 
+                                 mleap_default_folder = NULL, maven_default_version = NULL,
+                                 maven_default_folder = NULL, versions = NULL
+                                 ) {
   
   json_config <- system.file(file.path("extdata", "config.json"), package = "mleap")
   cj <- jsonlite::fromJSON(json_config)
@@ -71,12 +66,14 @@ mleap_set_session_defaults <- function(mleap_home = NULL,
     mleap_found <- FALSE
   } 
   
+  mleap_version <- mleap_version %||% msd$runtime$mleap_version %||% ""
+  
   ret <- list(
     runtime = list(
       mleap = tibble(
         home = mleap_home,
         found = mleap_found,
-        version = msd$runtime$mleap_version %||% ""
+        version = mleap_version 
       ),
       maven = tibble(
         home = maven_home %||% "",
@@ -98,7 +95,7 @@ get_session_defaults <- function(...) {
   vars <- enexprs(...)
   msd <- .mleap_globals$session_defaults 
   if(is.null(msd)) {
-    mleap_set_session_defaults()
+    set_session_defaults()
     msd <- .mleap_globals$session_defaults   
   } 
   for(i in seq_along(vars)) {

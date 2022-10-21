@@ -6,7 +6,7 @@
 #' @export
 mleap_load_bundle <- function(path) {
   mleap_verify()
-  load_mleap_jars()
+  bundle_jars(path)
   ctx_builder <- .jnew("ml.combust.mleap.runtime.javadsl.ContextBuilder")
   ctx <- .jcall(
     ctx_builder, 
@@ -81,9 +81,22 @@ retrieve_model_schema <- function(jobj) {
   )
 }
 
+bundle_jars <- function(path) {
+  current_ver <- get_session_defaults("runtime", "mleap", "version")
+  bundle_ver <- bundle_info(path)$version
+  if(current_ver != "") {
+    if(current_ver != bundle_ver) stop(
+      "MLeap version ", current_ver, " is currently loaded. The bundle needs version ", bundle_ver, ". Restart R and re-try loading the bundle."
+    )
+  } else {
+    load_mleap_jars(version = bundle_ver)
+    set_session_defaults(mleap_version = bundle_ver)
+  }
+}
+
 bundle_info <- function(path) {
   json_file <- "bundle.json"
-  if(is_dir(json_file)) {
+  if(is_dir(path)) {
     target <- path
   } else {
     target <- path(tempdir(), "bundles")  
@@ -91,3 +104,4 @@ bundle_info <- function(path) {
   }
   jsonlite::read_json(path(target, json_file))
 }
+
