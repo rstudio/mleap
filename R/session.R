@@ -19,15 +19,13 @@ set_session_defaults <- function(mleap_home = NULL, mleap_version = NULL,
   
   mv <- msd$installation$maven
   
-  ams <- apache_mirror_selection %||% mv$apache_mirror_selection
-  
-  maven_install <- getOption("maven.install.dir") %||% install_dir("maven1")
+  maven_install <- getOption("maven.install.dir") %||% install_dir("maven")
   
   installation_maven <- tibble(
     version = maven_default_version %||% mv$version,
     repo = maven_repo %||% getOption("maven.repo") %||% mv$repo, 
-    apache_mirror_selection = ams,
-    apache_mirror_url = apache_mirror_url %||% mv$apache_mirror_url %||% get_apache_mirror(ams),
+    apache_mirror_selection = apache_mirror_selection %||% mv$apache_mirror_selection %||% "",
+    apache_mirror_url = apache_mirror_url %||% mv$apache_mirror_url %||% "",
     download_path = maven_download_path %||% mv$download_path,
     base_folder = maven_default_folder %||%  mv$base_folder %||% maven_install
   )
@@ -132,15 +130,19 @@ get_version_folder <- function(base_folder, version = NULL) {
 }
 
 get_apache_mirror <- function(apache_portal = NULL) {
-  return("www.google.com")
   mirrors_info <- fromJSON(apache_portal)
   mirrors_info$preferred
 }
 
 get_maven_download_link <- function(version) {
-  sdf <- get_session_defaults()
-  mir <- sdf$installation$maven$apache_mirror_url
-  dwp <- gsub("\\$version", version, sdf$installation$maven$download_path)
-  paste0(mir, dwp)
+  curr_mirror <- get_session_defaults("installation", "maven", "apache_mirror_url")
+  if(curr_mirror == "") {
+    get_mirror <- get_session_defaults("installation", "maven", "apache_mirror_selection")
+    curr_mirror <- get_apache_mirror(get_mirror)
+    set_session_defaults(apache_mirror_url = get_mirror)
+  }
+  download_path <- get_session_defaults("installation", "maven", "download_path")
+  dwp <- gsub("\\$version", version, download_path)
+  paste0(curr_mirror, dwp)
 }
 
