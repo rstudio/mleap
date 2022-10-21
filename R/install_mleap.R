@@ -83,8 +83,8 @@ install_mleap <- function(mleap_version = mleap_defaults("version"),
 #'
 #' @export
 mleap_installed_versions <- function() {
-  if(get_session_defaults("runtime", "mleap_found")) {
-    base_folder <- get_session_defaults("runtime", "mleap_home")
+  if(get_session_defaults("runtime", "mleap", "found")) {
+    base_folder <- get_session_defaults("runtime", "mleap", "home")
     dirs <- dir_ls(base_folder, type = "directory")
     dir_names <- path_file(dirs)
     mleap_folders <- dir_names[grepl("mleap-", dir_names)]
@@ -117,11 +117,18 @@ mleap_installed_versions <- function() {
 }
 
 resolve_mleap_path <- function(version = NULL) {
-  get_session_defaults("runtime", "mleap_home")
+  if(is.null(version)) {
+    get_session_defaults("runtime", "mleap", "home")
+  } else {
+    res <- mleap_installed_versions()
+    rv <- res[res$mleap == version, ]
+    rv[1, ]$folder
+  }
+  
 }
 
 mleap_found <- function(version = NULL, path = NULL) {
-  get_session_defaults("runtime", "mleap_found")
+  get_session_defaults("runtime", "mleap", "found")
 }
 
 mleap_verify <- function() {

@@ -26,7 +26,7 @@ mleap_set_session_defaults <- function(mleap_home = NULL,
   
   ams <- apache_mirror_selection %||% mv$apache_mirror_selection
   
-  maven_install <- getOption("maven.install.dir") %||% install_dir("maven")
+  maven_install <- getOption("maven.install.dir") %||% install_dir("maven1")
   
   installation_maven <- tibble(
     version = maven_default_version %||% mv$version,
@@ -52,8 +52,6 @@ mleap_set_session_defaults <- function(mleap_home = NULL,
     if(!is.null(vf)) maven_home <- path(bf, vf)
   }
   
-  if(is.null(maven_home)) maven_home <- "{{ No Maven installation found }}"
-  
   mleap_home <- mleap_home %||% getOption("mleap.home") 
   mleap_found <- TRUE
   
@@ -75,9 +73,15 @@ mleap_set_session_defaults <- function(mleap_home = NULL,
   
   ret <- list(
     runtime = list(
-      mleap_home = mleap_home,
-      mleap_found = mleap_found,
-      maven_home = maven_home
+      mleap = tibble(
+        home = mleap_home,
+        found = mleap_found,
+        version = msd$runtime$mleap_version %||% ""
+      ),
+      maven = tibble(
+        home = maven_home %||% "",
+        found = !is.null(maven_home)
+      )
     ),
     installation = list(
       mleap = installation_mleap,
@@ -131,6 +135,7 @@ get_version_folder <- function(base_folder, version = NULL) {
 }
 
 get_apache_mirror <- function(apache_portal = NULL) {
+  return("www.google.com")
   mirrors_info <- fromJSON(apache_portal)
   mirrors_info$preferred
 }
