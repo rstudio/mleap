@@ -85,9 +85,12 @@ bundle_jars <- function(path) {
   current_ver <- get_session_defaults("runtime", "mleap", "version")
   bundle_ver <- bundle_info(path)$version
   if(current_ver != "") {
-    if(current_ver != bundle_ver) stop(
-      "MLeap version ", current_ver, " is currently loaded. The bundle needs version ", bundle_ver, ". Restart R and re-try loading the bundle."
+    msg <- paste0(
+      "MLeap version ", current_ver, 
+      " is currently loaded. The bundle needs version ", 
+      bundle_ver, ". Restart R and re-try loading the bundle."
     )
+    if(current_ver != bundle_ver) stop(msg)
   } else {
     load_mleap_jars(version = bundle_ver)
     set_session_defaults(mleap_version = bundle_ver)
