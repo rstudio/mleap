@@ -78,7 +78,7 @@ install_dir <- function(dir_name) {
 }
 
 resolve_maven_path <- function() {
-  maven_dir <- get_session_defaults("runtime", "maven_home")
+  maven_dir <- get_session_defaults("runtime", "maven", "home")
   maven_files <- dir_ls(maven_dir, recurse = TRUE, type = "file")
   
   if (identical(.Platform$OS.type, "windows")) {

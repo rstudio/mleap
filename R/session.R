@@ -46,17 +46,23 @@ set_session_defaults <- function(mleap_home = NULL, mleap_version = NULL,
   }
   
   mleap_home <- mleap_home %||% getOption("mleap.home") 
-  mleap_found <- TRUE
   
+  mleap_custom <- FALSE
   if(is.null(mleap_home)) {
     if(dir_exists(installation_mleap$base_folder)) {
       mleap_home <- installation_mleap$base_folder
     }
+  } else {
+    mleap_custom <- TRUE
   }
   
   if(!is.null(mleap_home)) {
     mleap_contents <- dir_ls(mleap_home, recurse = TRUE, glob = "*.jar")
-    if(!length(mleap_contents)) mleap_home <- NULL
+    if(!length(mleap_contents)) {
+      mleap_home <- NULL
+    } else {
+      mleap_found <- TRUE
+    }
   }
   
   if(is.null(mleap_home)) {
@@ -71,7 +77,8 @@ set_session_defaults <- function(mleap_home = NULL, mleap_version = NULL,
       mleap = tibble(
         home = mleap_home,
         found = mleap_found,
-        version = mleap_version 
+        version = mleap_version,
+        custom = mleap_custom
       ),
       maven = tibble(
         home = maven_home %||% "",
